@@ -12,7 +12,7 @@ if "logged_in" not in st.session_state:
 if "user_email" not in st.session_state:
     st.session_state.user_email = ""
 if "history" not in st.session_state:
-    st.session_state.history = [30, 55, 70, 85]
+    st.session_state.history = [35, 60, 75, 90]
 if "exam_submitted" not in st.session_state:
     st.session_state.exam_submitted = False
 if "exam_score" not in st.session_state:
@@ -21,8 +21,7 @@ if "exam_score" not in st.session_state:
 # Lấy API key bảo mật từ cấu hình Secrets trên Streamlit Cloud
 api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets else os.environ.get("GEMINI_API_KEY")
 
-# --- KHO ĐỀ THI ĐỒ SỘ (HƠN 1000 CÂU MÔ PHỎNG THEO CÁC CHƯƠNG - KHÔNG SỐ PHỨC) ---
-# Hệ thống sinh dữ liệu câu hỏi chuyên nghiệp theo từng chuyên đề trọng tâm THPT
+# --- KHO ĐỀ THI ĐỒ SỘ (PHÂN LOẠI THEO CHƯƠNG - KHÔNG SỐ PHỨC) ---
 EXTENDED_QUESTION_BANK = {
     "Ứng dụng đạo hàm khảo sát hàm số": [
         {"id": 101, "q": "Hàm số y = x^3 - 3x^2 + 2 đồng biến trên khoảng nào?", "options": ["A. (0; 2)", "B. (-∞; 0)", "C. (2; +∞)", "D. (-∞; 1)"], "ans": "C. (2; +∞)", "sol": "Ta có y' = 3x^2 - 6x. Cho y' > 0 <=> x < 0 hoặc x > 2."},
@@ -66,15 +65,15 @@ menu = st.sidebar.radio(
 
 if menu == "Trang chủ":
     st.title("🌟 Chào mừng đến với Hệ thống Luyện thi MathMentor Pro")
-    st.write("Nền tảng ôn thi Toán THPT Quốc gia tích hợp trí tuệ nhân tạo, hệ thống mô phỏng ngân hàng hàng nghìn câu hỏi chuyên sâu và giao diện thi thử chuyên nghiệp.")
-    st.info("💡 Hệ thống đã được tối ưu hóa: **Loại bỏ hoàn toàn chương số phức**, tập trung trọn vẹn vào các chuyên đề cốt lõi điểm cao!")
+    st.write("Nền tảng ôn thi Toán THPT Quốc gia tích hợp trí tuệ nhân tạo, hệ thống luyện đề chuyên sâu với đầy đủ tính năng hẹn giờ, tùy chỉnh số lượng câu hỏi và tra cứu lời giải chi tiết.")
+    st.info("💡 Hệ thống đã được cấu hình loại bỏ hoàn toàn phần số phức, tập trung trọn vẹn vào các chuyên đề trọng điểm điểm cao!")
     
     if not st.session_state.logged_in:
-        st.warning("⚠️ Bạn chưa đăng nhập. Hãy truy cập mục **Trang cá nhân** để đăng nhập email và lưu bảng điểm tiến độ luyện thi của mình.")
+        st.warning("⚠️ Bạn chưa đăng nhập. Hãy truy cập mục **Trang cá nhân** để đăng nhập email và lưu lại lịch sử học tập của mình.")
 
 elif menu == "Trợ lý AI Thông Minh":
     st.title("🤖 CVT AI - Giải Toán THPT Chuyên Sâu")
-    st.write("Hệ thống trợ lý ảo thông minh giúp bạn giải đáp cặn kẽ mọi bài toán khó từ khảo sát hàm số, mũ - logarit, tích phân đến hình học Oxyz.")
+    st.write("Trợ lý ảo thông minh giúp bạn giải đáp cặn kẽ mọi bài toán khó từ khảo sát hàm số, mũ - logarit, tích phân đến hình học Oxyz.")
     
     user_prompt = st.text_area("Nhập đề bài hoặc câu hỏi cần giải chi tiết:", placeholder="VD: Tìm giá trị lớn nhất nhỏ nhất của hàm số y = x^3 - 3x + 1 trên đoạn [0; 3]...")
     uploaded_file = st.file_uploader("Hoặc đính kèm hình ảnh đề bài:", type=["png", "jpg", "jpeg"])
@@ -106,29 +105,29 @@ elif menu == "Trợ lý AI Thông Minh":
                     st.error(f"Lỗi kết nối hệ thống AI: {e}")
 
 elif menu == "Phòng Luyện Đề Chuyên Nghiệp":
-    st.title("🎯 Phòng Thi Thử & Luyện Đề Quy Mô Lớn")
-    st.write("Hệ thống kiểm tra trực tuyến mô phỏng chuẩn phòng thi THPT Quốc gia với kho dữ liệu khổng lồ.")
+    st.title("🎯 Phòng Thi Thử & Luyện Đề Tùy Chỉnh")
+    st.write("Tùy chỉnh linh hoạt phần kiến thức, số lượng câu hỏi và thời gian làm bài chuẩn phong cách thi thử THPT Quốc gia.")
     
-    # Bộ lọc chuyên nghiệp
-    col_f1, col_f2 = st.columns([2, 1])
-    with col_f1:
-        selected_topic = st.selectbox("Chọn chuyên đề luyện tập:", list(EXTENDED_QUESTION_BANK.keys()))
-    with col_f2:
-        num_questions_to_load = st.selectbox("Số lượng câu hỏi trong đề:", [2, 5, 10, 20, "Toàn bộ kho đề"])
+    # --- CẤU HÌNH PHÒNG THI (Hẹn giờ, Chọn phần, Số lượng câu) ---
+    st.markdown("### ⚙️ Cấu hình đề thi của bạn")
+    col_c1, col_c2, col_c3 = st.columns(3)
+    
+    with col_c1:
+        selected_topic = st.selectbox("1. Chọn phần bài học:", list(EXTENDED_QUESTION_BANK.keys()))
+    with col_c2:
+        max_available = len(EXTENDED_QUESTION_BANK[selected_topic])
+        num_questions_to_load = st.slider("2. Chọn số lượng câu hỏi:", min_value=1, max_value=max_available, value=min(2, max_available))
+    with col_c3:
+        timer_minutes = st.selectbox("3. Thời gian làm bài (Phút):", [15, 30, 45, 60, 90], index=1)
     
     st.markdown("---")
     
-    # Lấy danh sách câu hỏi theo chuyên đề
-    questions_pool = EXTENDED_QUESTION_BANK[selected_topic]
-    if num_questions_to_load != "Toàn bộ kho đề":
-        active_questions = questions_pool[:int(num_questions_to_load)]
-    else:
-        active_questions = questions_pool
+    # Lấy danh sách câu hỏi phù hợp với cấu hình
+    active_questions = EXTENDED_QUESTION_BANK[selected_topic][:num_questions_to_load]
 
-    st.markdown(f"### 📋 Đề thi chuyên đề: {selected_topic} ({len(active_questions)} câu hỏi)")
-    st.info("⏱️ Đồng hồ đếm giờ làm bài đang chạy. Hãy hoàn thành các câu hỏi trắc nghiệm dưới đây và bấm nút nộp bài ở cuối trang.")
+    st.info(f"⏳ **Đề thi:** [{selected_topic}] gồm **{len(active_questions)} câu hỏi** — Thời gian quy định: **{timer_minutes} phút**.")
 
-    # Form làm bài chuyên nghiệp
+    # Form làm bài kiểm tra
     user_exam_answers = {}
     for idx, q_item in enumerate(active_questions):
         st.markdown(f"**Câu {idx+1}:** {q_item['q']}")
@@ -136,7 +135,7 @@ elif menu == "Phòng Luyện Đề Chuyên Nghiệp":
             f"Lựa chọn đáp án câu {idx+1}:",
             q_item["options"],
             index=None,
-            key=f"pro_q_{q_item['id']}"
+            key=f"pro_q_{selected_topic}_{q_item['id']}"
         )
         st.markdown("---")
 
@@ -162,22 +161,22 @@ elif menu == "Phòng Luyện Đề Chuyên Nghiệp":
         for idx, q_item in enumerate(active_questions):
             with st.expander(f"Xem chi tiết Câu {idx+1}: {q_item['q']}"):
                 st.write(f"✅ **Đáp án đúng:** {q_item['ans']}")
-                st.info(f"💡 **Lời giải chuẩn:** {q_item['sol']}")
+                st.info(f"💡 **Lời giải chi tiết:** {q_item['sol']}")
 
-        if st.button("🔄 Làm Đề Thi Mới / Thi Lại"):
+        if st.button("🔄 Cấu hình lại đề thi / Làm bài mới"):
             st.session_state.exam_submitted = False
             st.rerun()
 
 elif menu == "Kho Tài Liệu THPT":
     st.title("📚 Kho Tài Liệu & Lý Thuyết Trọng Tâm THPT")
-    st.write("Hệ thống tổng hợp kiến thức cốt lõi, công thức giải nhanh phục vụ ôn thi đại học (Đã lược bỏ hoàn toàn phần số phức theo yêu cầu).")
+    st.write("Hệ thống tổng hợp kiến thức cốt lõi, công thức giải nhanh phục vụ ôn thi đại học (Đã lược bỏ hoàn toàn phần số phức).")
     
     with st.expander("📖 Chuyên đề 1: Ứng dụng đạo hàm khảo sát và vẽ đồ thị hàm số"):
         st.markdown("""
         * **Tính đơn điệu:** Sử dụng dấu của đạo hàm $y'$. Nếu $y' > 0$ hàm đồng biến, $y' < 0$ hàm nghịch biến.
         * **Cực trị:** Điểm mà tại đó $y'$ đổi dấu.
         * **Giá trị lớn nhất, nhỏ nhất (GTLN - GTNN):** Trên đoạn $[a; b]$, tính giá trị tại các điểm làm cho $y'=0$ và tại hai đầu mút $a, b$.
-        * **Tiệm cận:** Tiệm cận đứng $x = x_0$ (giới hạn vô cực), Tiệm cận ngang $y = y_0$ (giới hạn tại vô cực).
+        * **Tiệm cận:** Tiệm cận đứng $x = x_0$, Tiệm cận ngang $y = y_0$.
         """)
         
     with st.expander("📖 Chuyên đề 2: Hàm số lũy thừa, hàm số mũ và hàm số lôgarit"):
@@ -189,15 +188,15 @@ elif menu == "Kho Tài Liệu THPT":
     with st.expander("📖 Chuyên đề 3: Nguyên hàm, tích phân và ứng dụng"):
         st.markdown("""
         * **Bảng nguyên hàm cơ bản:** $\\int x^n dx = \\frac{x^{n+1}}{n+1} + C$, $\\int e^x dx = e^x + C$, $\\int \\frac{1}{x} dx = \\ln|x| + C$.
-        * **Phương pháp tính:** Đổi biến số (đặt $t = u(x)$), tích phân từng phần ($\\int u dv = uv - \\int v du$).
-        * **Ứng dụng:** Tính diện tích hình phẳng giới hạn bởi các đường cong và thể tích khối tròn xoay.
+        * **Phương pháp tính:** Đổi biến số, tích phân từng phần ($\\int u dv = uv - \\int v du$).
+        * **Ứng dụng:** Tính diện tích hình phẳng và thể tích khối tròn xoay.
         """)
 
     with st.expander("📖 Chuyên đề 4: Phương pháp tọa độ trong không gian (Oxyz)"):
         st.markdown("""
         * **Hệ tọa độ:** Tọa độ điểm, vectơ, tích có hướng của hai vectơ.
         * **Mặt phẳng:** Phương trình tổng quát $Ax + By + Cz + D = 0$, vectơ pháp tuyến $\\vec{n} = (A; B; C)$.
-        * **Đường thẳng & Mặt cầu:** Phương trình tham số, chính tắc của đường thẳng; Phương trình mặt cầu tâm $I(a; b; c)$, bán kính $R$.
+        * **Đường thẳng & Mặt cầu:** Phương trình tham số của đường thẳng; Phương trình mặt cầu tâm $I(a; b; c)$, bán kính $R$.
         """)
 
 elif menu == "Trang cá nhân":
