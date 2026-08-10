@@ -13,7 +13,7 @@ api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets els
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader("Khung Hỏi Đáp AI")
+    st.subheader(" ")
     user_prompt = st.text_area("Nhập câu hỏi hình học của bạn:", placeholder="VD: Cho tam giác ABC vuông tại A...")
     uploaded_file = st.file_uploader("Hoặc tải lên hình ảnh đề bài:", type=["png", "jpg", "jpeg"])
     
@@ -44,8 +44,8 @@ with col1:
                     st.error(f"Đã có lỗi xảy ra: {e}")
 
 with col2:
-    st.subheader("Bảng vẽ GeoGebra Tương Tác")
-    st.info("Bấm vào nút bên dưới để mở bảng vẽ GeoGebra lớn và đầy đủ tính năng:")
+    st.subheader("Bảng vẽ Tương Tác")
+    st.info(" ")
     st.markdown(
         """
         <a href="https://www.geogebra.org/geometry" target="_blank">
