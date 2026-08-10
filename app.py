@@ -4,8 +4,77 @@ import random
 from google import genai
 from google.genai import types
 
-# Cấu hình trang
-st.set_page_config(page_title="MathMentor - Phòng Luyện Đề THPT", layout="wide")
+# --- CẤU HÌNH GIAO DIỆN NÂNG CAO & CSS TÙY CHỈNH ---
+st.set_page_config(
+    page_title="MathMentor Pro - Hệ Thống Luyện Thi AI", 
+    page_icon="📐", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS tạo màu sắc nổi bật, hiện đại, không còn nhàm chán
+st.markdown("""
+    <style>
+    /* Tổng thể nền ứng dụng */
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+        color: #f8fafc;
+    }
+    
+    /* Sidebar tùy chỉnh */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        border-right: 1px solid #334155;
+    }
+    
+    /* Tiêu đề ứng dụng */
+    h1, h2, h3 {
+        color: #38bdf8 !important;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    
+    /* Thẻ Card nội dung */
+    .custom-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid #475569;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        margin-bottom: 20px;
+    }
+    
+    /* Nút bấm chuyển màu bắt mắt */
+    .stButton>button {
+        background: linear-gradient(90deg, #6366f1 0%, #3b82f6 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    .stButton>button:hover {
+        background: linear-gradient(90deg, #4f46e5 0%, #2563eb 100%);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
+        transform: translateY(-2px);
+    }
+    
+    /* Khung nhập liệu và Selectbox */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border: 1px solid #475569 !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Radio options */
+    .stRadio label {
+        color: #e2e8f0 !important;
+        font-weight: 500;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- QUẢN LÝ TÀI KHOẢN & DỮ LIỆU TRONG SESSION ---
 if "logged_in" not in st.session_state:
@@ -13,7 +82,7 @@ if "logged_in" not in st.session_state:
 if "user_email" not in st.session_state:
     st.session_state.user_email = ""
 if "history" not in st.session_state:
-    st.session_state.history = [50, 75, 85, 92]
+    st.session_state.history = [60, 75, 85, 95]
 if "exam_submitted" not in st.session_state:
     st.session_state.exam_submitted = False
 if "exam_score" not in st.session_state:
@@ -56,7 +125,6 @@ def get_optimized_question_bank():
         ]
     }
 
-    # Sinh quy mô lớn hơn 1000 câu bằng biến hóa tham số k
     for i in range(125):
         k_val = str((i % 4) + 1)
         for topic in topics:
@@ -75,46 +143,56 @@ def get_optimized_question_bank():
 MASTER_QUESTION_BANK = get_optimized_question_bank()
 
 # --- THANH MENU BÊN TRÁI (SIDEBAR) ---
-st.sidebar.markdown("## 📐 MathMentor Pro")
+st.sidebar.markdown("## 🚀 MathMentor Pro")
 st.sidebar.markdown("---")
 
 if st.session_state.logged_in:
-    st.sidebar.success(f"👤 Tài khoản:\n**{st.session_state.user_email}**")
-    if st.sidebar.button("Đăng xuất"):
+    st.sidebar.success(f"✨ Tài khoản:\n**{st.session_state.user_email}**")
+    if st.sidebar.button("🚪 Đăng xuất"):
         st.session_state.logged_in = False
         st.session_state.user_email = ""
         st.rerun()
     st.sidebar.markdown("---")
 
 menu = st.sidebar.radio(
-    "Điều hướng hệ thống",
+    "🌟 Điều hướng hệ thống",
     ["Trang chủ", "Trợ lý AI Thông Minh", "Phòng Luyện Đề (1000+ Câu)", "Trang cá nhân"]
 )
 
 # --- NỘI DUNG CÁC TRANG ---
 
 if menu == "Trang chủ":
-    st.title("🌟 Chào mừng đến với Hệ thống Luyện thi MathMentor Pro")
-    st.write("Nền tảng ôn thi Toán THPT Quốc gia tích hợp trí tuệ nhân tạo, phòng luyện đề với kho dữ liệu khổng lồ **hơn 1000 câu hỏi trộn lẫn** ngẫu nhiên và hẹn giờ chuyên nghiệp.")
-    st.info("💡 Hệ thống tập trung hoàn toàn vào các chương cốt lõi (Đã loại bỏ hoàn toàn phần số phức).")
+    st.markdown("# 🌟 Chào mừng đến với MathMentor Pro")
+    st.markdown("### Nền tảng ôn thi Toán THPT Quốc gia thông minh thế hệ mới")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("<div class='custom-card'><h3>🤖 AI Thông Minh</h3><p>Hỗ trợ giải đáp chi tiết mọi bài toán khó bằng công nghệ Gemini AI tiên tiến nhất.</p></div>", unsafe_allow_html=True)
+    with col2:
+        st.markdown("<div class='custom-card'><h3>🎯 1000+ Câu Hỏi</h3><p>Kho đề thi khổng lồ được phân chia theo chuẩn cấu trúc bộ đề THPT quốc gia.</p></div>", unsafe_allow_html=True)
+    with col3:
+        st.markdown("<div class='custom-card'><h3>📊 Theo Dõi Tiến Độ</h3><p>Lưu trữ lịch sử điểm số và phân tích điểm yếu trực quan qua biểu đồ.</p></div>", unsafe_allow_html=True)
+        
+    st.info("💡 **Lưu ý:** Hệ thống đã lược bỏ hoàn toàn phần số phức để tập trung sâu vào các trọng tâm điểm số cao.")
     
     if not st.session_state.logged_in:
-        st.warning("⚠️ Bạn chưa đăng nhập. Hãy truy cập mục **Trang cá nhân** để đăng nhập email và lưu lại lịch sử học tập của mình.")
+        st.warning("⚠️ Bạn chưa đăng nhập. Hãy truy cập mục **Trang cá nhân** để liên kết email và lưu lại lịch sử làm bài.")
 
 elif menu == "Trợ lý AI Thông Minh":
-    st.title("🤖 CVT AI - Giải Toán THPT Chuyên Sâu")
-    st.write("Trợ lý ảo thông minh giúp bạn giải đáp cặn kẽ mọi bài toán khó từ khảo sát hàm số, mũ - logarit, tích phân đến hình học Oxyz.")
+    st.markdown("# 🤖 Trợ Lý AI - Giải Toán Chuyên Sâu")
+    st.markdown("<div class='custom-card'>", unsafe_allow_html=True)
+    st.write("Nhập đề bài hoặc tải hình ảnh câu hỏi để nhận lời giải chi tiết từng bước chuẩn logic toán học.")
     
-    user_prompt = st.text_area("Nhập đề bài hoặc câu hỏi cần giải chi tiết:", placeholder="VD: Tìm giá trị lớn nhất nhỏ nhất của hàm số y = x^3 - 3x + 1 trên đoạn [0; 3]...")
-    uploaded_file = st.file_uploader("Hoặc đính kèm hình ảnh đề bài:", type=["png", "jpg", "jpeg"])
+    user_prompt = st.text_area("✍️ Nội dung câu hỏi của bạn:", placeholder="VD: Tìm giá trị lớn nhất nhỏ nhất của hàm số y = x^3 - 3x + 1 trên đoạn [0; 3]...")
+    uploaded_file = st.file_uploader("📷 Hoặc tải lên hình ảnh đề bài:", type=["png", "jpg", "jpeg"])
     
-    if st.button("Phân tích và Giải bài toán", type="primary"):
+    if st.button("✨ Phân Tích & Giải Chi Tiết", type="primary"):
         if not api_key:
             st.error("Chưa cấu hình API Key hệ thống trên Streamlit Secrets!")
         elif not user_prompt and not uploaded_file:
             st.warning("Vui lòng nhập nội dung câu hỏi hoặc tải ảnh lên!")
         else:
-            with st.spinner("AI đang thiết lập lời giải chuẩn từng bước logic..."):
+            with st.spinner("🔮 AI đang thiết lập lời giải chuẩn từng bước..."):
                 try:
                     client = genai.Client(api_key=api_key)
                     contents = [user_prompt] if user_prompt else []
@@ -123,39 +201,35 @@ elif menu == "Trợ lý AI Thông Minh":
                         bytes_data = uploaded_file.getvalue()
                         contents.append(types.Part.from_bytes(data=bytes_data, mime_type=uploaded_file.type))
                     
-                    system_instruction = "Bạn là một chuyên gia luyện thi Toán THPT Quốc gia hàng đầu. Hãy giải thích lời giải thật chi tiết, rõ ràng từng bước lập luận, công thức chuẩn mực."
+                    system_instruction = "Bạn là một chuyên gia luyện thi Toán THPT Quốc gia hàng đầu. Hãy giải thích lời giải thật chi tiết, rõ ràng từng bước lập luận, định dạng toán học đẹp mắt."
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=contents,
                         config=types.GenerateContentConfig(system_instruction=system_instruction)
                     )
-                    st.success("Lời giải chi tiết từ Trợ lý AI:")
+                    st.success("🎉 Lời giải chi tiết từ Trợ lý AI:")
                     st.markdown(response.text)
                 except Exception as e:
                     st.error(f"Lỗi kết nối hệ thống AI: {e}")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 elif menu == "Phòng Luyện Đề (1000+ Câu)":
-    st.title("🎯 Phòng Thi Thử Tổng Hợp (Hơn 1000 Câu Trộn Lẫn)")
-    st.write(f"Kho dữ liệu hiện có: **{len(MASTER_QUESTION_BANK)} câu hỏi** được trộn lẫn ngẫu nhiên từ mọi chuyên đề THPT giúp bạn ôn luyện không giới hạn.")
+    st.markdown("# 🎯 Phòng Thi Thử Trắc Nghiệm Tổng Hợp")
+    st.markdown(f"<div class='custom-card'>Kho dữ liệu hệ thống: <b>{len(MASTER_QUESTION_BANK)} câu hỏi chuẩn hóa</b> với các biến thể thông số đa dạng giúp bạn luyện tập không giới hạn.</div>", unsafe_allow_html=True)
     
-    # --- CẤU HÌNH ĐỀ THI ---
-    st.markdown("### ⚙️ Thiết lập đề thi của bạn")
     col_c1, col_c2 = st.columns(2)
-    
     with col_c1:
-        num_to_load = st.slider("Chọn số lượng câu hỏi trong đề:", min_value=5, max_value=50, value=10)
+        num_to_load = st.slider("🔢 Số lượng câu hỏi trong đề:", min_value=5, max_value=50, value=10)
     with col_c2:
-        timer_minutes = st.selectbox("Thời gian làm bài chuẩn (Phút):", [15, 30, 45, 60, 90], index=1)
+        timer_minutes = st.selectbox("⏳ Thời gian làm bài:", [15, 30, 45, 60, 90], index=1)
     
-    # Nút khởi tạo/trộn đề mới
     if not st.session_state.exam_submitted:
-        if st.button("🎲 Trộn Ngay Đề Thi Mới Từ Kho 1000+ Câu", type="secondary"):
+        if st.button("🎲 Trộn Đề Thi Mới Ngay", type="secondary"):
             shuffled = MASTER_QUESTION_BANK.copy()
             random.shuffle(shuffled)
             st.session_state.shuffled_questions = shuffled[:num_to_load]
             st.rerun()
 
-    # Khởi tạo mặc định nếu chưa có đề
     if not st.session_state.shuffled_questions:
         shuffled = MASTER_QUESTION_BANK.copy()
         random.shuffle(shuffled)
@@ -163,15 +237,14 @@ elif menu == "Phòng Luyện Đề (1000+ Câu)":
 
     active_questions = st.session_state.shuffled_questions
 
+    st.markdown(f"📌 Đề thi hiện tại gồm **{len(active_questions)} câu hỏi** — Thời gian quy định: **{timer_minutes} phút**.")
     st.markdown("---")
-    st.info(f"⏳ **Đề thi tổng hợp** gồm **{len(active_questions)} câu hỏi ngẫu nhiên** — Thời gian quy định: **{timer_minutes} phút**.")
 
-    # Form làm bài kiểm tra
     user_exam_answers = {}
     for idx, q_item in enumerate(active_questions):
         st.markdown(f"**Câu {idx+1}** *({q_item['chuyen_de']})*: {q_item['q']}")
         user_exam_answers[idx] = st.radio(
-            f"Lựa chọn đáp án câu {idx+1}:",
+            f"Chọn đáp án câu {idx+1}:",
             q_item["options"],
             index=None,
             key=f"math_q_{q_item['id']}_{idx}"
@@ -179,7 +252,7 @@ elif menu == "Phòng Luyện Đề (1000+ Câu)":
         st.markdown("---")
 
     if not st.session_state.exam_submitted:
-        if st.button("🚀 Nộp Bài Thi & Chấm Điểm Tổng Hợp", type="primary"):
+        if st.button("🚀 Nộp Bài Thi & Xem Điểm", type="primary"):
             correct_count = 0
             total_active = len(active_questions)
             
@@ -194,16 +267,16 @@ elif menu == "Phòng Luyện Đề (1000+ Câu)":
             st.session_state.history.append(final_score)
             st.rerun()
     else:
-        st.success(f"🏆 Kết quả bài thi của bạn: **{st.session_state.exam_score} / 100 điểm** (Đúng {int(st.session_state.exam_score * len(active_questions) / 100)} / {len(active_questions)} câu)")
+        st.success(f"🏆 Kết quả bài thi: **{st.session_state.exam_score} / 100 điểm** (Đúng {int(st.session_state.exam_score * len(active_questions) / 100)} / {len(active_questions)} câu)")
         
-        st.markdown("### 🔍 Tra Cứu Đáp Án & Hướng Dẫn Giải Chi Tiết:")
+        st.markdown("### 🔍 Tra Cứu Đáp Án & Lời Giải Chi Tiết:")
         for idx, q_item in enumerate(active_questions):
             with st.expander(f"Xem chi tiết Câu {idx+1} ({q_item['chuyen_de']})"):
                 st.markdown(f"**Đề bài:** {q_item['q']}")
                 st.write(f"✅ **Đáp án đúng:** {q_item['ans']}")
-                st.info(f"💡 **Lời giải chi tiết:** {q_item['sol']}")
+                st.info(f"💡 **Hướng dẫn giải:** {q_item['sol']}")
 
-        if st.button("🔄 Trộn Đề Mới Khác & Làm Lại"):
+        if st.button("🔄 Trộn Đề Khác & Làm Lại"):
             st.session_state.exam_submitted = False
             shuffled = MASTER_QUESTION_BANK.copy()
             random.shuffle(shuffled)
@@ -211,39 +284,41 @@ elif menu == "Phòng Luyện Đề (1000+ Câu)":
             st.rerun()
 
 elif menu == "Trang cá nhân":
-    st.title("👤 Hồ Sơ Người Dùng & Quản Lý Tài Khoản Học Tập")
+    st.markdown("# 👤 Hồ Sơ & Quản Lý Tài Khoản")
     
     if not st.session_state.logged_in:
-        st.info("Vui lòng đăng nhập hệ thống bằng email cá nhân để kích hoạt lưu trữ kết quả và theo dõi biểu đồ năng lực.")
+        st.markdown("<div class='custom-card'>", unsafe_allow_html=True)
+        st.info("Vui lòng đăng nhập hệ thống để kích hoạt bộ nhớ lưu trữ kết quả luyện đề.")
         with st.form("login_system_form"):
-            email_val = st.text_input("Nhập địa chỉ Email:", placeholder="vd: giakhanhtran88@gmail.com")
-            pass_val = st.text_input("Mật khẩu bảo mật:", type="password")
-            submit_btn = st.form_submit_button("Đăng nhập tài khoản Pro", type="primary")
+            email_val = st.text_input("📧 Nhập địa chỉ Email:", placeholder="vd: student@gmail.com")
+            pass_val = st.text_input("🔒 Mật khẩu bảo mật:", type="password")
+            submit_btn = st.form_submit_button("Đăng Nhập Ngay", type="primary")
             
             if submit_btn:
                 if email_val and "@" in email_val:
                     st.session_state.logged_in = True
                     st.session_state.user_email = email_val
-                    st.success(f"Đăng nhập thành công cho tài khoản: {email_val}")
+                    st.success(f"Đăng nhập thành công: {email_val}")
                     st.rerun()
                 else:
-                    st.error("Vui lòng nhập đúng định dạng địa chỉ email!")
+                    st.error("Vui lòng nhập đúng định dạng email!")
+        st.markdown("</div>", unsafe_allow_html=True)
     else:
-        col_p1, col_p2 = st.columns([1, 1])
+        col_p1, col_p2 = st.columns(2)
         with col_p1:
-            st.markdown(f"### 📧 {st.session_state.user_email}")
-            st.success("Trạng thái: **Đã kích hoạt tài khoản học tập chuyên sâu**")
-            
+            st.markdown(f"<div class='custom-card'><h3>📧 {st.session_state.user_email}</h3>", unsafe_allow_html=True)
+            st.success("Trạng thái: **Thành viên Pro tích cực**")
             mean_score = sum(st.session_state.history) / len(st.session_state.history)
-            st.metric(label="Điểm trung bình các bài thi thử", value=f"{mean_score:.1f} / 100")
-            st.error("Trọng tâm cần cải thiện: Giải tích không gian Oxyz và Tích phân nâng cao")
+            st.metric(label="📈 Điểm trung bình các bài thi", value=f"{mean_score:.1f} / 100")
+            st.markdown("</div>", unsafe_allow_html=True)
         
         with col_p2:
-            st.markdown("### 💡 Phân Tích Năng Lực AI")
-            st.info("Hệ thống ghi nhận bạn đã hoàn thành các bài thi thử trắc nghiệm thành công. Hãy duy trì lịch luyện đề đều đặn mỗi ngày.")
-            if st.button("Khởi tạo lộ trình nước rút THPT", type="primary"):
-                st.toast("Đã tự động tối ưu hóa lộ trình ôn tập bám sát năng lực thực tế!")
+            st.markdown("<div class='custom-card'><h3>💡 Phân Tích Từ AI</h3>", unsafe_allow_html=True)
+            st.info("Hệ thống ghi nhận phong độ ôn tập của bạn rất tốt. Hãy tiếp tục phát huy ở các chuyên đề hình học và tích phân.")
+            if st.button("⚡ Tối Ưu Lộ Trình Ôn Thi", type="primary"):
+                st.toast("Đã cập nhật lộ trình cá nhân hóa thành công!")
+            st.markdown("</div>", unsafe_allow_html=True)
         
         st.markdown("---")
-        st.subheader("📈 Biểu đồ tiến độ điểm số qua các lần luyện đề")
+        st.markdown("### 📊 Biểu Đồ Tiến Độ Điểm Số Qua Các Lần Thi")
         st.bar_chart(st.session_state.history)
