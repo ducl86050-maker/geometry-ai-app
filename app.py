@@ -6,9 +6,9 @@ from google.genai import types
 # Cấu hình trang
 st.set_page_config(page_title="MathMentor - Trợ Lý Toán Học AI", layout="wide")
 
-# Khởi tạo lưu trữ lịch sử bài làm trong session của trình duyệt
+# Khởi tạo dữ liệu lịch sử và điểm số trong session
 if "history" not in st.session_state:
-    st.session_state.history = [15, 27]  # Dữ liệu điểm số mẫu ban đầu giống hình 6
+    st.session_state.history = [15, 27, 40]
 
 if "quiz_submitted" not in st.session_state:
     st.session_state.quiz_submitted = False
@@ -35,7 +35,7 @@ history_tab = st.sidebar.selectbox("Lịch sử làm bài", ["Xem lịch sử g�
 
 if menu == "Trang chủ":
     st.title("🌟 Chào mừng bạn đến với MathMentor")
-    st.write("Nền tảng học toán thông minh tích hợp Trợ lý AI, hệ thống luyện đề tự chấm điểm và công cụ trực quan hóa.")
+    st.write("Nền tảng học toán thông minh tích hợp Trợ lý AI, kho đề thi đa dạng và công cụ trực quan hóa hình học.")
     st.info("👈 Hãy chọn các mục trong menu bên trái để bắt đầu khám phá các tính năng!")
 
 elif menu == "Trợ lý AI & GeoGebra":
@@ -92,43 +92,53 @@ elif menu == "Trợ lý AI & GeoGebra":
 
 elif menu == "Luyện đề & Kiểm tra":
     st.title("📝 Kiểm tra & Luyện Đề THPT QG")
-    st.subheader("ĐỀ MINH HỌA THPT QG 2024")
+    st.subheader("ĐỀ MINH HỌA THPT QG - TỔNG HỢP NHIỀU CÂU HỎI")
     
-    st.progress(0.25, text="Đề kiểm tra trắc nghiệm toán")
+    st.progress(0.25, text="Phần thi trắc nghiệm kiến thức toán học")
     
-    # Câu hỏi 1
-    st.markdown("### Câu 1: Hàm số $y = x^3 - 3x^2 + 2$ đồng biến trên khoảng nào dưới đây?")
+    # Danh sách nhiều câu hỏi đa dạng
     ans1 = st.radio(
-        "Chọn đáp án câu 1:",
+        "**Câu 1:** Hàm số $y = x^3 - 3x^2 + 2$ đồng biến trên khoảng nào dưới đây?",
         ("A. $(0; 2)$", "B. $(-\\infty; 0)$", "C. $(2; +\\infty)$", "D. $(-\\infty; 1)$"),
-        index=None,
-        key="q1"
+        index=None, key="q1"
     )
     
-    # Câu hỏi 2
-    st.markdown("### Câu 2: Nghiệm của phương trình $2^{x-1} = 8$ là bao nhiêu?")
     ans2 = st.radio(
-        "Chọn đáp án câu 2:",
+        "**Câu 2:** Nghiệm của phương trình $2^{x-1} = 8$ là bao nhiêu?",
         ("A. $x = 2$", "B. $x = 3$", "C. $x = 4$", "D. $x = 1$"),
-        index=None,
-        key="q2"
+        index=None, key="q2"
+    )
+
+    ans3 = st.radio(
+        "**Câu 3:** Cho cấp số cộng $(u_n)$ có số hạng đầu $u_1 = 2$ và công sai $d = 3$. Số hạng thứ 5 của cấp số cộng là:",
+        ("A. $u_5 = 14$", "B. $u_5 = 11$", "C. $u_5 = 17$", "D. $u_5 = 12$"),
+        index=None, key="q3"
+    )
+
+    ans4 = st.radio(
+        "**Câu 4:** Thể tích $V$ của khối lập phương có cạnh bằng $a$ là:",
+        ("A. $V = a^3$", "B. $V = 3a^3$", "C. $V = \\frac{1}{3}a^3$", "D. $V = a^2$"),
+        index=None, key="q4"
     )
     
     if not st.session_state.quiz_submitted:
-        if st.button("Nộp bài & Chấm điểm", type="primary"):
-            correct = 0
-            # Đáp án đúng: Câu 1 là C ((2; +infty)), Câu 2 là C (x = 4 vì 2^(4-1) = 2^3 = 8)
-            if ans1 and "C." in ans1:
-                correct += 50
-            if ans2 and "C." in ans2:
-                correct += 50
+        if st.button("Nộp bài & Chấm điểm tổng hợp", type="primary"):
+            correct_count = 0
+            total_questions = 4
             
-            st.session_state.score = correct
+            # Đáp án đúng: Câu 1: C, Câu 2: C, Câu 3: B (u5 = u1 + 4d = 2 + 12 = 14 -> chờ chút: u1=2, u2=5, u3=8, u4=11, u5=14 -> Đáp án A), Câu 4: A (V = a^3)
+            if ans1 and "C." in ans1: correct_count += 1
+            if ans2 and "C." in ans2: correct_count += 1
+            if ans3 and "A." in ans3: correct_count += 1
+            if ans4 and "A." in ans4: correct_count += 1
+            
+            calculated_score = int((correct_count / total_questions) * 100)
+            st.session_state.score = calculated_score
             st.session_state.quiz_submitted = True
-            st.session_state.history.append(correct)  # Lưu điểm vào lịch sử
+            st.session_state.history.append(calculated_score)
             st.rerun()
     else:
-        st.success(f"🎉 Bạn đã nộp bài! Điểm số của bạn là: **{st.session_state.score} / 100**")
+        st.success(f"🎉 Bạn đã hoàn thành bài kiểm tra! Số điểm đạt được: **{st.session_state.score} / 100** (Số câu đúng: {st.session_state.score // 25}/4)")
         if st.button("Làm lại bài kiểm tra"):
             st.session_state.quiz_submitted = False
             st.rerun()
@@ -145,29 +155,36 @@ elif menu == "Kho tài liệu":
             * Nếu $f'(x) < 0$ trên $(a, b)$ thì hàm số nghịch biến.
         * **3. Cực Trị của Hàm Số:** Tìm điểm mà tại đó đạo hàm đổi dấu.
         """)
-        if st.button("Tạo bài tập mới từ chuyên đề này"):
-            st.success("Đã tạo thành công bộ bài tập chuyên đề Đạo hàm để luyện tập!")
+        if st.button("Tạo bài tập mới từ chuyên đề Đạo hàm"):
+            st.success("Đã tạo thành công bộ bài tập chuyên đề Đạo hàm nâng cao!")
+
+    with st.expander("📖 CHƯƠNG II: HÀM SỐ LŨY THỪA, MŨ VÀ LOGARIT"):
+        st.markdown("""
+        * **1. Lũy thừa và tính chất:** Các công thức biến đổi lũy thừa với số mũ thực.
+        * **2. Lôgarit:** Định nghĩa và các tính chất cơ bản $\\log_a(bc) = \\log_a b + \\log_a c$.
+        * **3. Phương trình - Bất phương trình mũ và lôgarit:** Các phương pháp đặt ẩn phụ, lôgarit hóa.
+        """)
+        if st.button("Tạo bài tập mới từ chuyên đề Mũ - Logarit"):
+            st.success("Đã tạo thành công bộ bài tập chuyên đề Mũ - Logarit!")
 
 elif menu == "Trang cá nhân":
     st.title("👤 Hồ Sơ Người Dùng & Đánh Giá Năng Lực")
     
     col_u1, col_u2 = st.columns([1, 1])
     with col_u1:
-        st.markdown("### 📧 giakhanhtran88@gmail.com")
+        st.markdown("?")
         st.write("Trạng thái: **Đã đăng nhập**")
         
-        # Tính điểm trung bình thực tế từ lịch sử làm bài
         avg_score = sum(st.session_state.history) / len(st.session_state.history)
         st.metric(label="Điểm trung bình các bài kiểm tra", value=f"{avg_score:.1f} / 100")
-        st.error("Kỹ năng cần bồi dưỡng: Đề minh họa THPT QG 2024")
+        st.error("Kỹ năng cần bồi dưỡng: Giải tích và Hình học không gian")
     
     with col_u2:
         st.markdown("### 💡 Gợi ý tiếp theo")
-        st.info("Dựa trên kết quả bài kiểm tra gần nhất - Hãy xem lại lý thuyết và luyện thêm các bài tập tự luận nâng cao.")
+        st.info("Dựa trên kết quả lịch sử làm bài - Hãy xem lại lý thuyết hàm số mũ và luyện thêm các bài tập trắc nghiệm.")
         if st.button("Tạo đề phù hợp năng lực", type="primary"):
-            st.toast("Đang tạo đề xuất đề thi riêng cho bạn...")
+            st.toast("Đang tạo đề xuất đề thi riêng tối ưu theo năng lực...")
     
     st.markdown("---")
-    st.subheader("📈 Xu hướng điểm số các lần làm bài (Cập nhật thực tế)")
-    # Hiển thị biểu đồ cột theo dữ liệu lưu trữ thật trong session
+    st.subheader("📈 Xu hướng điểm số các lần luyện tập")
     st.bar_chart(st.session_state.history)
