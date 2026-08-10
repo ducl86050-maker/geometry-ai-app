@@ -5,7 +5,7 @@ from google.genai import types
 
 st.set_page_config(page_title="AI Hình Học Phẳng", layout="wide")
 
-st.title("🤖 Trợ lý AI Hình Học Phẳng (Gemini & GeoGebra)")
+st.title("🤖 Trợ lý AI Hình Học Phẳng ")
 
 # Lấy API key bảo mật từ cấu hình Secrets trên Streamlit Cloud
 api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets else os.environ.get("GEMINI_API_KEY")
@@ -13,7 +13,7 @@ api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets els
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader(" ")
+    st.subheader(" chào mừng bạn!! ")
     user_prompt = st.text_area("Nhập câu hỏi hình học của bạn:", placeholder="VD: Cho tam giác ABC vuông tại A...")
     uploaded_file = st.file_uploader("Hoặc tải lên hình ảnh đề bài:", type=["png", "jpg", "jpeg"])
     
@@ -45,7 +45,6 @@ with col1:
 
 with col2:
     st.subheader("Bảng vẽ Tương Tác")
-    st.info(" ")
     st.markdown(
         """
         <a href="https://www.geogebra.org/geometry" target="_blank">
