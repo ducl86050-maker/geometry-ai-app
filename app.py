@@ -6,6 +6,16 @@ from google.genai import types
 # Cấu hình trang
 st.set_page_config(page_title="MathMentor - Trợ Lý Toán Học AI", layout="wide")
 
+# Khởi tạo lưu trữ lịch sử bài làm trong session của trình duyệt
+if "history" not in st.session_state:
+    st.session_state.history = [15, 27]  # Dữ liệu điểm số mẫu ban đầu giống hình 6
+
+if "quiz_submitted" not in st.session_state:
+    st.session_state.quiz_submitted = False
+
+if "score" not in st.session_state:
+    st.session_state.score = 0
+
 # Lấy API key bảo mật từ cấu hình Secrets trên Streamlit Cloud
 api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets else os.environ.get("GEMINI_API_KEY")
 
@@ -25,8 +35,8 @@ history_tab = st.sidebar.selectbox("Lịch sử làm bài", ["Xem lịch sử g�
 
 if menu == "Trang chủ":
     st.title("🌟 Chào mừng bạn đến với MathMentor")
-    st.write("Nền tảng học toán thông minh tích hợp Trợ lý AI và công cụ trực quan hóa hình học hàng đầu.")
-    st.info("👈 Hãy chọn các mục trong menu bên trái để bắt đầu trải nghiệm các tính năng!")
+    st.write("Nền tảng học toán thông minh tích hợp Trợ lý AI, hệ thống luyện đề tự chấm điểm và công cụ trực quan hóa.")
+    st.info("👈 Hãy chọn các mục trong menu bên trái để bắt đầu khám phá các tính năng!")
 
 elif menu == "Trợ lý AI & GeoGebra":
     st.title("🤖 CVT AI - Giải Toán THPT")
@@ -66,7 +76,7 @@ elif menu == "Trợ lý AI & GeoGebra":
 
     with col2:
         st.subheader("Bảng vẽ GeoGebra Tương Tác")
-        st.write("Do trình duyệt chặn khung nhúng trực tiếp, bạn hãy bấm nút bên dưới để mở bảng vẽ không gian/hình học lớn:")
+        st.write("Mở bảng vẽ không gian/hình học lớn để tương tác trực quan:")
         st.markdown(
             """
             <a href="https://www.geogebra.org/geometry" target="_blank">
@@ -78,34 +88,56 @@ elif menu == "Trợ lý AI & GeoGebra":
             unsafe_allow_html=True
         )
         st.markdown("<br>", unsafe_allow_html=True)
-        st.image("https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80", caption="Công cụ hỗ trợ trực quan", use_container_width=True)
+        st.image("https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80", caption="Hỗ trợ hình học trực quan", use_container_width=True)
 
 elif menu == "Luyện đề & Kiểm tra":
     st.title("📝 Kiểm tra & Luyện Đề THPT QG")
     st.subheader("ĐỀ MINH HỌA THPT QG 2024")
     
-    # Giao diện làm bài kiểm tra giả lập (Hình 5)
-    st.progress(0.08, text="8% hoàn thành (Câu 1 / 12)")
+    st.progress(0.25, text="Đề kiểm tra trắc nghiệm toán")
     
+    # Câu hỏi 1
     st.markdown("### Câu 1: Hàm số $y = x^3 - 3x^2 + 2$ đồng biến trên khoảng nào dưới đây?")
-    
-    ans = st.radio(
-        "Chọn đáp án đúng:",
+    ans1 = st.radio(
+        "Chọn đáp án câu 1:",
         ("A. $(0; 2)$", "B. $(-\\infty; 0)$", "C. $(2; +\\infty)$", "D. $(-\\infty; 1)$"),
-        index=None
+        index=None,
+        key="q1"
     )
     
-    col_prev, col_next = st.columns([1, 1])
-    with col_prev:
-        st.button("⬅️ Câu trước")
-    with col_next:
-        st.button("Câu tiếp ➡️", type="primary")
+    # Câu hỏi 2
+    st.markdown("### Câu 2: Nghiệm của phương trình $2^{x-1} = 8$ là bao nhiêu?")
+    ans2 = st.radio(
+        "Chọn đáp án câu 2:",
+        ("A. $x = 2$", "B. $x = 3$", "C. $x = 4$", "D. $x = 1$"),
+        index=None,
+        key="q2"
+    )
+    
+    if not st.session_state.quiz_submitted:
+        if st.button("Nộp bài & Chấm điểm", type="primary"):
+            correct = 0
+            # Đáp án đúng: Câu 1 là C ((2; +infty)), Câu 2 là C (x = 4 vì 2^(4-1) = 2^3 = 8)
+            if ans1 and "C." in ans1:
+                correct += 50
+            if ans2 and "C." in ans2:
+                correct += 50
+            
+            st.session_state.score = correct
+            st.session_state.quiz_submitted = True
+            st.session_state.history.append(correct)  # Lưu điểm vào lịch sử
+            st.rerun()
+    else:
+        st.success(f"🎉 Bạn đã nộp bài! Điểm số của bạn là: **{st.session_state.score} / 100**")
+        if st.button("Làm lại bài kiểm tra"):
+            st.session_state.quiz_submitted = False
+            st.rerun()
 
 elif menu == "Kho tài liệu":
     st.title("📚 Kho Tài Liệu & Sơ Đồ Tư Duy")
     st.info("Tổng hợp các chuyên đề luyện thi Toán THPT trọng tâm.")
     
-    with st.expander("📖 CHƯƠNG I: ƯNG DỤNG ĐẠO HÀM ĐỂ KHẢO SÁT VÀ VẼ ĐỒ THỊ HÀM SỐ"):
+    with st.expander("📖 CHƯƠNG I: ỨNG DỤNG ĐẠO HÀM ĐỂ KHẢO SÁT VÀ VẼ ĐỒ THỊ HÀM SỐ"):
         st.markdown("""
         * **1. Miễn Xác Định & Tính Liên Tục:** Xác định tập giá trị $D$ mà hàm số có nghĩa.
         * **2. Tính Đơn Điệu của Hàm Số:** Sử dụng đạo hàm bậc nhất ($f'(x)$) để xác định chiều biến thiên.
@@ -114,7 +146,7 @@ elif menu == "Kho tài liệu":
         * **3. Cực Trị của Hàm Số:** Tìm điểm mà tại đó đạo hàm đổi dấu.
         """)
         if st.button("Tạo bài tập mới từ chuyên đề này"):
-            st.success("Đã tạo đề luyện tập riêng cho chương này!")
+            st.success("Đã tạo thành công bộ bài tập chuyên đề Đạo hàm để luyện tập!")
 
 elif menu == "Trang cá nhân":
     st.title("👤 Hồ Sơ Người Dùng & Đánh Giá Năng Lực")
@@ -123,16 +155,19 @@ elif menu == "Trang cá nhân":
     with col_u1:
         st.markdown("### 📧 giakhanhtran88@gmail.com")
         st.write("Trạng thái: **Đã đăng nhập**")
-        st.metric(label="Điểm trung bình các bài kiểm tra", value="22.0 / 100")
+        
+        # Tính điểm trung bình thực tế từ lịch sử làm bài
+        avg_score = sum(st.session_state.history) / len(st.session_state.history)
+        st.metric(label="Điểm trung bình các bài kiểm tra", value=f"{avg_score:.1f} / 100")
         st.error("Kỹ năng cần bồi dưỡng: Đề minh họa THPT QG 2024")
     
     with col_u2:
         st.markdown("### 💡 Gợi ý tiếp theo")
-        st.info("Dựa trên lịch sử bài kiểm tra gần nhất: Độ chính xác 21.7% - Hãy xem lại lý thuyết và luyện thêm 2-3 bài tự luận.")
-        st.button("Tạo đề phù hợp năng lực", type="primary")
+        st.info("Dựa trên kết quả bài kiểm tra gần nhất - Hãy xem lại lý thuyết và luyện thêm các bài tập tự luận nâng cao.")
+        if st.button("Tạo đề phù hợp năng lực", type="primary"):
+            st.toast("Đang tạo đề xuất đề thi riêng cho bạn...")
     
     st.markdown("---")
-    st.subheader("📈 Xu hướng điểm số gần đây")
-    # Biểu đồ mẫu mô phỏng hình 6
-    chart_data = [15, 27]
-    st.bar_chart(chart_data)
+    st.subheader("📈 Xu hướng điểm số các lần làm bài (Cập nhật thực tế)")
+    # Hiển thị biểu đồ cột theo dữ liệu lưu trữ thật trong session
+    st.bar_chart(st.session_state.history)
