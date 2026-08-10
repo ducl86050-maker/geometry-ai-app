@@ -45,7 +45,16 @@ with col1:
 
 with col2:
     st.subheader("Bảng vẽ GeoGebra Tương Tác")
-    geogebra_html = """
-    <iframe src="https://www.geogebra.org/geometry" width="100%" height="600px" style="border:1px solid #ccc; border-radius:8px;" allowfullscreen></iframe>
-    """
-    st.markdown(geogebra_html, unsafe_allow_html=True)
+    st.info("Bấm vào nút bên dưới để mở bảng vẽ GeoGebra lớn và đầy đủ tính năng:")
+    st.markdown(
+        """
+        <a href="https://www.geogebra.org/geometry" target="_blank">
+            <button style="background-color:#1976d2; color:white; padding:12px 20px; border:none; border-radius:6px; font-size:16px; cursor:pointer; font-weight:bold;">
+                🌐 Mở Bảng Vẽ GeoGebra Lớn
+            </button>
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.image("https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80", caption="Công cụ hỗ trợ trực quan hình học", use_container_width=True)
