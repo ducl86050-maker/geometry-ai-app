@@ -8,7 +8,7 @@ st.set_page_config(page_title="AI Hình Học Phẳng", layout="wide")
 st.title("🤖 Trợ lý AI Hình Học Phẳng (Gemini & GeoGebra)")
 
 # Nhập API Key (có thể cấu hình ẩn trên Streamlit Cloud sau)
-api_key = st.os.environ.get("GEMINI_API_KEY") or st.text_input("Nhập Google Gemini API Key của bạn:", type="password")
+api_key = os.environ.get("GEMINI_API_KEY") or st.text_input("Nhập Google Gemini API Key của bạn:", type="password")
 
 col1, col2 = st.columns([1, 1])
 
