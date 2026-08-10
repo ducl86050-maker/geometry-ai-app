@@ -88,7 +88,7 @@ if st.session_state.logged_in:
 
 menu = st.sidebar.radio(
     "Điều hướng hệ thống",
-    ["Trang chủ", "Trợ lý AI Thông Minh", "Phòng Luyện Đề (1000+ Câu)", "Kho Tài Liệu THPT", "Trang cá nhân"]
+    ["Trang chủ", "Trợ lý AI Thông Minh", "Phòng Luyện Đề (1000+ Câu)", "Trang cá nhân"]
 )
 
 # --- NỘI DUNG CÁC TRANG ---
@@ -209,36 +209,6 @@ elif menu == "Phòng Luyện Đề (1000+ Câu)":
             random.shuffle(shuffled)
             st.session_state.shuffled_questions = shuffled[:num_to_load]
             st.rerun()
-
-elif menu == "Kho Tài Liệu THPT":
-    st.title("📚 Kho Tài Liệu & Lý Thuyết Trọng Tâm THPT")
-    st.write("Hệ thống tổng hợp kiến thức cốt lõi, công thức giải nhanh phục vụ ôn thi đại học (Đã lược bỏ hoàn toàn phần số phức).")
-    
-    with st.expander("📖 Chuyên đề 1: Ứng dụng đạo hàm khảo sát và vẽ đồ thị hàm số"):
-        st.markdown("""
-        * **Tính đơn điệu:** Sử dụng dấu của đạo hàm $y'$. Nếu $y' > 0$ hàm đồng biến, $y' < 0$ hàm nghịch biến.
-        * **Cực trị:** Điểm mà tại đó $y'$ đổi dấu.
-        * **Giá trị lớn nhất, nhỏ nhất (GTLN - GTNN):** Trên đoạn $[a; b]$.
-        * **Tiệm cận:** Tiệm cận đứng $x = x_0$, Tiệm cận ngang $y = y_0$.
-        """)
-        
-    with st.expander("📖 Chuyên đề 2: Hàm số lũy thừa, hàm số mũ và hàm số lôgarit"):
-        st.markdown("""
-        * **Công thức lũy thừa & Lôgarit:** $\\log_a(bc) = \\log_a b + \\log_a c$.
-        * **Phương trình mũ & Lôgarit:** Đưa về cùng cơ số hoặc đặt ẩn phụ.
-        """)
-
-    with st.expander("📖 Chuyên đề 3: Nguyên hàm, tích phân và ứng dụng"):
-        st.markdown("""
-        * **Bảng nguyên hàm cơ bản:** $\\int x^n \\mathrm{d}x = \\frac{x^{n+1}}{n+1} + C$.
-        * **Phương pháp tính:** Đổi biến số, tích phân từng phần.
-        """)
-
-    with st.expander("📖 Chuyên đề 4: Phương pháp tọa độ trong không gian (Oxyz)"):
-        st.markdown("""
-        * **Mặt phẳng:** Phương trình tổng quát $Ax + By + Cz + D = 0$.
-        * **Đường thẳng & Mặt cầu:** Phương trình tham số, chính tắc và phương trình mặt cầu.
-        """)
 
 elif menu == "Trang cá nhân":
     st.title("👤 Hồ Sơ Người Dùng & Quản Lý Tài Khoản Học Tập")
