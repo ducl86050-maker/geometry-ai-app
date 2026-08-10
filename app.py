@@ -24,7 +24,7 @@ if "shuffled_questions" not in st.session_state:
 # Lấy API key bảo mật từ cấu hình Secrets trên Streamlit Cloud
 api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets else os.environ.get("GEMINI_API_KEY")
 
-# --- HỆ THỐNG NGÂN HÀNG HƠN 1000 CÂU HỎI TỰ ĐỘNG (ĐÃ SỬA LỖI CÚ PHÁP) ---
+# --- HỆ THỐNG NGÂN HÀNG HƠN 1000 CÂU HỎI CHUẨN ĐỊNH DẠNG TOÁN HỌC ---
 @st.cache_data
 def get_optimized_question_bank():
     topics = [
@@ -39,20 +39,20 @@ def get_optimized_question_bank():
     
     base_data = {
         "Ứng dụng đạo hàm": [
-            ("Hàm số y = x^3 - 3x^2 + {k} đồng biến trên khoảng nào?", ["A. (0; 2)", "B. (-∞; 0)", "C. (2; +∞)", "D. (-∞; 1)"], "C. (2; +∞)", "Tính đạo hàm y' = 3x^2 - 6x, cho y' > 0 suy ra khoảng đồng biến là (2; +∞)."),
-            ("Giá trị cực đại của hàm số y = -x^3 + 3x + {k} là:", ["A. y = 2 + {k}", "B. y = {k}", "C. y = 4 + {k}", "D. y = -1 + {k}"], "A. y = 2 + {k}", "Đạo hàm y' = -3x^2 + 3 = 0 => x = 1. Giá trị cực đại y(1) = 2 + k.")
+            ("Hàm số $y = x^3 - 3x^2 + {k}$ đồng biến trên khoảng nào?", ["A. $(0; 2)$", "B. $(-\\infty; 0)$", "C. $(2; +\\infty)$", "D. $(-\\infty; 1)$"], "C. $(2; +\\infty)$", "Tính đạo hàm $y' = 3x^2 - 6x$, cho $y' > 0$ suy ra khoảng đồng biến là $(2; +\\infty)$."),
+            ("Giá trị cực đại của hàm số $y = -x^3 + 3x + {k}$ là:", ["A. $y = 2 + {k}$", "B. $y = {k}$", "C. $y = 4 + {k}$", "D. $y = -1 + {k}$"], "A. $y = 2 + {k}$", "Đạo hàm $y' = -3x^2 + 3 = 0 \\Rightarrow x = 1$. Giá trị cực đại $y(1) = 2 + k$.")
         ],
         "Hàm số mũ và Lôgarit": [
-            ("Nghiệm của phương trình 2^(x-{k}) = 8 là:", ["A. x = 3", "B. x = 1", "C. x = 2", "D. x = 4"], "A. x = 3", "Biến đổi 8 = 2^3, đồng nhất số mũ suy ra kết quả."),
-            ("Tập nghiệm của bất phương trình log_2(x - {k}) < 3 là:", ["A. ({k}; 8)", "B. ({k}; 7)", "C. (-∞; 8)", "D. (8; +∞)"], "A. ({k}; 8)", "Giải điều kiện và bất phương trình logarit cơ bản.")
+            ("Nghiệm của phương trình $2^{x - {k}} = 8$ là:", ["A. $x = 3$", "B. $x = 1$", "C. $x = 2$", "D. $x = 4$"], "A. $x = 3$", "Biến đổi $8 = 2^3$, đồng nhất số mũ suy ra kết quả."),
+            ("Tập nghiệm của bất phương trình $\\log_2(x - {k}) < 3$ là:", ["A. $({k}; 8)$", "B. $({k}; 7)$", "C. $(-\\infty; 8)$", "D. $(8; +\\infty)$"], "A. $({k}; 8)$", "Giải điều kiện và bất phương trình logarit cơ bản.")
         ],
         "Nguyên hàm và Tích phân": [
-            ("Nguyên hàm của hàm số f(x) = cos(x) + {k}x là:", ["A. sin(x) + k*x^2/2 + C", "B. -sin(x) + k*x^2 + C", "C. cos(x) + kx + C", "D. sin(x) + kx + C"], "A. sin(x) + k*x^2/2 + C", "Áp dụng công thức nguyên hàm cơ bản cho từng số hạng."),
-            ("Tích phân từ 0 đến 1 của (2x + {k}) dx bằng:", ["A. 1 + k", "B. 2 + k", "C. 3 + k", "D. k"], "A. 1 + k", "Tính nguyên hàm F(x) = x^2 + k*x rồi thế cận từ 0 đến 1.")
+            ("Nguyên hàm của hàm số $f(x) = \\cos(x) + {k}x$ là:", ["A. $\\sin(x) + \\frac{k x^2}{2} + C$", "B. $-\\sin(x) + k x^2 + C$", "C. $\\cos(x) + kx + C$", "D. $\\sin(x) + kx + C$"], "A. $\\sin(x) + \\frac{k x^2}{2} + C$", "Áp dụng công thức nguyên hàm cơ bản cho từng số hạng."),
+            ("Tích phân $\\int_{0}^{1} (2x + {k}) \\mathrm{d}x$ bằng:", ["A. $1 + k$", "B. $2 + k$", "C. $3 + k$", "D. $k$"], "A. $1 + k$", "Tính nguyên hàm $F(x) = x^2 + kx$ rồi thế cận từ $0$ đến $1$.")
         ],
         "Hình học Oxyz": [
-            ("Trong không gian Oxyz, vectơ pháp tuyến của mặt phẳng x - 2y + {k}z - 5 = 0 là:", ["A. (1; -2; k)", "B. (1; 2; -k)", "C. (-1; 2; k)", "D. (2; -1; k)"], "A. (1; -2; k)", "Tọa độ vectơ pháp tuyến là hệ số của x, y, z trong phương trình mặt phẳng."),
-            ("Thể tích khối cầu có bán kính R = {k} là:", ["A. (4/3)*k^3 * π", "B. 4*k^2 * π", "C. (4/3)*k^2 * π", "D. k^3 * π"], "A. (4/3)*k^3 * π", "Áp dụng công thức thể tích khối cầu V = (4/3)πR^3.")
+            ("Trong không gian $Oxyz$, vectơ pháp tuyến của mặt phẳng $x - 2y + {k}z - 5 = 0$ là:", ["A. $\\vec{n} = (1; -2; k)$", "B. $\\vec{n} = (1; 2; -k)$", "C. $\\vec{n} = (-1; 2; k)$", "D. $\\vec{n} = (2; -1; k)$"], "A. $\\vec{n} = (1; -2; k)$", "Tọa độ vectơ pháp tuyến là hệ số của $x, y, z$ trong phương trình mặt phẳng."),
+            ("Thể tích khối cầu có bán kính $R = {k}$ là:", ["A. $V = \\frac{4}{3}k^3\\pi$", "B. $V = 4k^2\\pi$", "C. $V = \\frac{4}{3}k^2\\pi$", "D. $V = k^3\\pi$"], "A. $V = \\frac{4}{3}k^3\\pi$", "Áp dụng công thức thể tích khối cầu $V = \\frac{4}{3}\\pi R^3$.")
         ]
     }
 
@@ -174,7 +174,7 @@ elif menu == "Phòng Luyện Đề (1000+ Câu)":
             f"Lựa chọn đáp án câu {idx+1}:",
             q_item["options"],
             index=None,
-            key=f"fixed_q_{q_item['id']}_{idx}"
+            key=f"math_q_{q_item['id']}_{idx}"
         )
         st.markdown("---")
 
@@ -198,7 +198,8 @@ elif menu == "Phòng Luyện Đề (1000+ Câu)":
         
         st.markdown("### 🔍 Tra Cứu Đáp Án & Hướng Dẫn Giải Chi Tiết:")
         for idx, q_item in enumerate(active_questions):
-            with st.expander(f"Xem chi tiết Câu {idx+1} ({q_item['chuyen_de']}): {q_item['q']}"):
+            with st.expander(f"Xem chi tiết Câu {idx+1} ({q_item['chuyen_de']})"):
+                st.markdown(f"**Đề bài:** {q_item['q']}")
                 st.write(f"✅ **Đáp án đúng:** {q_item['ans']}")
                 st.info(f"💡 **Lời giải chi tiết:** {q_item['sol']}")
 
@@ -229,7 +230,7 @@ elif menu == "Kho Tài Liệu THPT":
 
     with st.expander("📖 Chuyên đề 3: Nguyên hàm, tích phân và ứng dụng"):
         st.markdown("""
-        * **Bảng nguyên hàm cơ bản:** $\\int x^n dx = \\frac{x^{n+1}}{n+1} + C$.
+        * **Bảng nguyên hàm cơ bản:** $\\int x^n \\mathrm{d}x = \\frac{x^{n+1}}{n+1} + C$.
         * **Phương pháp tính:** Đổi biến số, tích phân từng phần.
         """)
 
