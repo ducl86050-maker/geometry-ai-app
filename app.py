@@ -7,8 +7,8 @@ st.set_page_config(page_title="AI Hình Học Phẳng", layout="wide")
 
 st.title("🤖 Trợ lý AI Hình Học Phẳng (Gemini & GeoGebra)")
 
-# Nhập API Key (có thể cấu hình ẩn trên Streamlit Cloud sau)
-api_key = os.environ.get("GEMINI_API_KEY") or st.text_input("Nhập Google Gemini API Key của bạn:", type="password")
+# Lấy API key bảo mật từ cấu hình Secrets trên Streamlit Cloud
+api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets else os.environ.get("GEMINI_API_KEY")
 
 col1, col2 = st.columns([1, 1])
 
@@ -19,17 +19,16 @@ with col1:
     
     if st.button("Gửi & Phân Tích", type="primary"):
         if not api_key:
-            st.error("Vui lòng nhập Gemini API Key!")
+            st.error("Chưa cấu hình API Key trong hệ thống của Streamlit!")
         elif not user_prompt and not uploaded_file:
             st.warning("Vui lòng nhập câu hỏi hoặc tải ảnh lên!")
         else:
             with st.spinner("AI đang phân tích..."):
                 try:
                     client = genai.Client(api_key=api_key)
-                    contents = [user_prompt]
+                    contents = [user_prompt] if user_prompt else []
                     
                     if uploaded_file:
-                        # Lưu tạm file ảnh để gửi lên Gemini
                         bytes_data = uploaded_file.getvalue()
                         contents.append(types.Part.from_bytes(data=bytes_data, mime_type=uploaded_file.type))
                     
@@ -46,7 +45,6 @@ with col1:
 
 with col2:
     st.subheader("Bảng vẽ GeoGebra Tương Tác")
-    # Nhúng trực tiếp GeoGebra Web App vào Streamlit bằng iframe
     geogebra_html = """
     <iframe src="https://www.geogebra.org/geometry" width="100%" height="600px" style="border:1px solid #ccc; border-radius:8px;" allowfullscreen></iframe>
     """
