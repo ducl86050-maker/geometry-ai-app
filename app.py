@@ -12,41 +12,44 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS tạo màu sắc nổi bật, hiện đại, không còn nhàm chán
+# Custom CSS khắc phục triệt để lỗi đè màu, chữ trắng rõ ràng trên nền tối
 st.markdown("""
     <style>
     /* Tổng thể nền ứng dụng */
     .stApp {
         background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-        color: #f8fafc;
+        color: #ffffff !important;
     }
     
-    /* Sidebar tùy chỉnh */
+    /* Sidebar tùy chỉnh màu sắc */
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
         border-right: 1px solid #334155;
     }
+    section[data-testid="stSidebar"] * {
+        color: #ffffff !important;
+    }
     
     /* Tiêu đề ứng dụng */
-    h1, h2, h3 {
-        color: #38bdf8 !important;
-        font-family: 'Segoe UI', sans-serif;
+    h1, h2, h3, h4, h5, h6, span, p, label {
+        color: #ffffff !important;
     }
     
     /* Thẻ Card nội dung */
     .custom-card {
-        background: rgba(30, 41, 59, 0.7);
+        background: rgba(30, 41, 59, 0.85);
         border: 1px solid #475569;
         padding: 20px;
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         margin-bottom: 20px;
+        color: #ffffff !important;
     }
     
     /* Nút bấm chuyển màu bắt mắt */
     .stButton>button {
         background: linear-gradient(90deg, #6366f1 0%, #3b82f6 100%);
-        color: white;
+        color: white !important;
         border: none;
         border-radius: 8px;
         padding: 10px 20px;
@@ -63,15 +66,22 @@ st.markdown("""
     /* Khung nhập liệu và Selectbox */
     .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div {
         background-color: #1e293b !important;
-        color: #f8fafc !important;
+        color: #ffffff !important;
         border: 1px solid #475569 !important;
         border-radius: 8px !important;
     }
     
-    /* Radio options */
-    .stRadio label {
-        color: #e2e8f0 !important;
-        font-weight: 500;
+    /* Radio options & Text trắc nghiệm hiển thị rõ ràng */
+    .stRadio div[role="radiogroup"] label {
+        color: #ffffff !important;
+        font-weight: 500 !important;
+        font-size: 16px !important;
+    }
+    
+    /* Expander text */
+    .streamlit-expanderHeader {
+        color: #38bdf8 !important;
+        font-weight: bold !important;
     }
     </style>
 """, unsafe_allow_html=True)
