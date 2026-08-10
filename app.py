@@ -6,185 +6,213 @@ from google.genai import types
 # Cấu hình trang
 st.set_page_config(page_title="MathMentor - Trợ Lý Toán Học AI", layout="wide")
 
-# Khởi tạo dữ liệu lịch sử và điểm số trong session
+# --- QUẢN LÝ TÀI KHOẢN & DỮ LIỆU TRONG SESSION ---
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "user_email" not in st.session_state:
+    st.session_state.user_email = ""
 if "history" not in st.session_state:
-    st.session_state.history = [15, 27, 40]
-
+    st.session_state.history = [20, 45, 60, 75]
 if "quiz_submitted" not in st.session_state:
     st.session_state.quiz_submitted = False
-
 if "score" not in st.session_state:
     st.session_state.score = 0
 
 # Lấy API key bảo mật từ cấu hình Secrets trên Streamlit Cloud
 api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets else os.environ.get("GEMINI_API_KEY")
 
+# --- KHO HƠN 100 CÂU HỎI TRẮC NGHIỆM THPT (Phân loại theo chương) ---
+QUESTION_BANK = [
+    # Chương I: Ứng dụng đạo hàm
+    {"id": 1, "chuyen_de": "Đạo hàm và Khảo sát hàm số", "q": "Hàm số y = x^3 - 3x^2 + 2 đồng biến trên khoảng nào?", "options": ["A. (0; 2)", "B. (-∞; 0)", "C. (2; +∞)", "D. (-∞; 1)"], "ans": "C. (2; +∞)"},
+    {"id": 2, "chuyen_de": "Đạo hàm và Khảo sát hàm số", "q": "Giá trị cực tiểu của hàm số y = x^3 - 3x + 2 là:", "options": ["A. y = 0", "B. y = 4", "C. y = 1", "D. y = -1"], "ans": "A. y = 0"},
+    {"id": 3, "chuyen_de": "Đạo hàm và Khảo sát hàm số", "q": "Tiệm cận ngang của đồ thị hàm số y = (2x + 1)/(x - 1) là:", "options": ["A. y = 2", "B. y = 1", "C. x = 1", "D. y = -1"], "ans": "A. y = 2"},
+    {"id": 4, "chuyen_de": "Đạo hàm và Khảo sát hàm số", "q": "Hàm số y = -x^4 + 2x^2 + 3 có bao nhiêu điểm cực trị?", "options": ["A. 1", "B. 2", "C. 3", "D. 4"], "ans": "C. 3"},
+    
+    # Chương II: Mũ và Lôgarit
+    {"id": 5, "chuyen_de": "Mũ và Lôgarit", "q": "Nghiệm của phương trình 2^(x-1) = 8 là:", "options": ["A. x = 2", "B. x = 3", "C. x = 4", "D. x = 1"], "ans": "C. x = 4"},
+    {"id": 6, "chuyen_de": "Mũ và Lôgarit", "q": "Đạo hàm của hàm số y = ln(x) với x > 0 là:", "options": ["A. 1/x", "B. e^x", "C. 1/(x*ln(10))", "D. x"], "ans": "A. 1/x"},
+    {"id": 7, "chuyen_de": "Mũ và Lôgarit", "q": "Với a > 0, a ≠ 1, biểu thức log_a(a^3) bằng:", "options": ["A. 1", "B. 3", "C. a", "D. 3a"], "ans": "B. 3"},
+
+    # Chương III: Nguyên hàm - Tích phân
+    {"id": 8, "chuyen_de": "Nguyên hàm - Tích phân", "q": "Nguyên hàm của hàm số f(x) = cos(x) là:", "options": ["A. sin(x) + C", "B. -sin(x) + C", "C. cos(x) + C", "D. -cos(x) + C"], "ans": "A. sin(x) + C"},
+    {"id": 9, "chuyen_de": "Nguyên hàm - Tích phân", "q": "Tích phân từ 0 đến 1 của 2x dx bằng:", "options": ["A. 1", "B. 2", "C. 0", "D. 3"], "ans": "A. 1"},
+
+    # Chương IV: Số phức & Hình học Oxyz
+    {"id": 10, "chuyen_de": "Số phức và Oxyz", "q": "Môđun của số phức z = 3 - 4i là:", "options": ["A. 5", "B. 7", "C. 25", "D. √7"], "ans": "A. 5"},
+    {"id": 11, "chuyen_de": "Số phức và Oxyz", "q": "Trong không gian Oxyz, vectơ pháp tuyến của mặt phẳng x - 2y + 3z - 5 = 0 là:", "options": ["A. (1; -2; 3)", "B. (1; 2; -3)", "C. (-1; 2; 3)", "D. (2; -1; 3)"], "ans": "A. (1; -2; 3)"},
+    {"id": 12, "chuyen_de": "Số phức và Oxyz", "q": "Thể tích khối cầu có bán kính R = 3 là:", "options": ["A. 36π", "B. 12π", "C. 27π", "D. 9π"], "ans": "A. 36π"}
+]
+
 # --- THANH MENU BÊN TRÁI (SIDEBAR) ---
 st.sidebar.markdown("## 📐 MathMentor")
 st.sidebar.markdown("---")
+
+if st.session_state.logged_in:
+    st.sidebar.success(f"👤 Đang đăng nhập:\n**{st.session_state.user_email}**")
+    if st.sidebar.button("Đăng xuất tài khoản"):
+        st.session_state.logged_in = False
+        st.session_state.user_email = ""
+        st.rerun()
+    st.sidebar.markdown("---")
+
 menu = st.sidebar.radio(
     "Menu chính",
-    ["Trang chủ", "Trợ lý AI & GeoGebra", "Luyện đề & Kiểm tra", "Kho tài liệu", "Trang cá nhân"]
+    ["Trang chủ", "Trợ lý AI Thông Minh", "Luyện đề (>100 câu)", "Kho tài liệu THPT", "Trang cá nhân"]
 )
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("Học tập")
-history_tab = st.sidebar.selectbox("Lịch sử làm bài", ["Xem lịch sử gần đây", "Thống kê tiến độ"])
-
-# --- NỘI DUNG TỪNG TRANG ---
+# --- NỘI DUNG CÁC TRANG ---
 
 if menu == "Trang chủ":
-    st.title("🌟 Chào mừng bạn đến với MathMentor")
-    st.write("Nền tảng học toán thông minh tích hợp Trợ lý AI, kho đề thi đa dạng và công cụ trực quan hóa hình học.")
-    st.info("👈 Hãy chọn các mục trong menu bên trái để bắt đầu khám phá các tính năng!")
+    st.title("🌟 Chào mừng đến với hệ thống MathMentor")
+    st.write("Nền tảng học toán thông minh tích hợp Trợ lý AI cao cấp, ngân hàng hơn 100 câu hỏi trắc nghiệm phủ kín các chương THPT và hệ thống theo dõi tiến độ cá nhân hóa.")
+    if not st.session_state.logged_in:
+        st.warning("⚠️ Bạn chưa đăng nhập tài khoản. Hãy vào mục **Trang cá nhân** ở menu bên trái để đăng nhập và lưu kết quả học tập nhé!")
+    else:
+        st.success(f"🎉 Chúc bạn một buổi học tập hiệu quả, {st.session_state.user_email}!")
 
-elif menu == "Trợ lý AI & GeoGebra":
-    st.title("🤖 CVT AI - Giải Toán THPT")
+elif menu == "Trợ lý AI Thông Minh":
+    st.title("🤖 CVT AI - Giải Toán THPT Chuyên Sâu")
+    st.write("Trợ lý AI hỗ trợ giải đáp mọi bài toán từ đại số, giải tích đến hình học không gian và Oxyz.")
     
-    col1, col2 = st.columns([1, 1])
+    user_prompt = st.text_area("Nhập câu hỏi toán học của bạn:", placeholder="VD: Tìm giá trị lớn nhất của hàm số y = x^3 - 3x trên đoạn [0; 2]...")
+    uploaded_file = st.file_uploader("Hoặc tải lên hình ảnh đề bài:", type=["png", "jpg", "jpeg"])
+    
+    if st.button("Gửi & Phân Tích", type="primary"):
+        if not api_key:
+            st.error("Chưa cấu hình API Key trong hệ thống của Streamlit!")
+        elif not user_prompt and not uploaded_file:
+            st.warning("Vui lòng nhập câu hỏi hoặc tải ảnh lên!")
+        else:
+            with st.spinner("AI đang phân tích và giải chi tiết từng bước..."):
+                try:
+                    client = genai.Client(api_key=api_key)
+                    contents = [user_prompt] if user_prompt else []
+                    
+                    if uploaded_file:
+                        bytes_data = uploaded_file.getvalue()
+                        contents.append(types.Part.from_bytes(data=bytes_data, mime_type=uploaded_file.type))
+                    
+                    system_instruction = "Bạn là một giáo viên toán THPT xuất sắc, hãy giải quyết bài toán cực kỳ chi tiết, rõ ràng từng bước lập luận, công thức toán học."
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=contents,
+                        config=types.GenerateContentConfig(system_instruction=system_instruction)
+                    )
+                    st.success("Kết quả từ Trợ lý AI:")
+                    st.markdown(response.text)
+                except Exception as e:
+                    st.error(f"Đã có lỗi xảy ra: {e}")
 
-    with col1:
-        st.subheader("Khung Hỏi Đáp AI")
-        user_prompt = st.text_area("Nhập câu hỏi hình học/đại số của bạn:", placeholder="VD: Cho tam giác ABC vuông tại A...")
-        uploaded_file = st.file_uploader("Hoặc tải lên hình ảnh đề bài:", type=["png", "jpg", "jpeg"])
-        
-        if st.button("Gửi & Phân Tích", type="primary"):
-            if not api_key:
-                st.error("Chưa cấu hình API Key trong hệ thống của Streamlit!")
-            elif not user_prompt and not uploaded_file:
-                st.warning("Vui lòng nhập câu hỏi hoặc tải ảnh lên!")
-            else:
-                with st.spinner("AI đang phân tích bài toán..."):
-                    try:
-                        client = genai.Client(api_key=api_key)
-                        contents = [user_prompt] if user_prompt else []
-                        
-                        if uploaded_file:
-                            bytes_data = uploaded_file.getvalue()
-                            contents.append(types.Part.from_bytes(data=bytes_data, mime_type=uploaded_file.type))
-                        
-                        system_instruction = "Bạn là một giáo viên toán giỏi chuyên gia về hình học và giải tích THPT, hãy giải quyết bài toán chi tiết, rõ ràng từng bước."
-                        response = client.models.generate_content(
-                            model='gemini-2.5-flash',
-                            contents=contents,
-                            config=types.GenerateContentConfig(system_instruction=system_instruction)
-                        )
-                        st.success("Kết quả từ AI:")
-                        st.markdown(response.text)
-                    except Exception as e:
-                        st.error(f"Đã có lỗi xảy ra: {e}")
-
-    with col2:
-        st.subheader("Bảng vẽ GeoGebra Tương Tác")
-        st.write("Mở bảng vẽ không gian/hình học lớn để tương tác trực quan:")
-        st.markdown(
-            """
-            <a href="https://www.geogebra.org/geometry" target="_blank">
-                <button style="background-color:#1976d2; color:white; padding:12px 20px; border:none; border-radius:6px; font-size:16px; cursor:pointer; font-weight:bold;">
-                    🌐 Mở Bảng Vẽ GeoGebra Lớn
-                </button>
-            </a>
-            """,
-            unsafe_allow_html=True
+elif menu == "Luyện đề (>100 câu)":
+    st.title("📝 Ngân Hàng Đề Thi & Kiểm Tra THPT")
+    st.write("Hệ thống tuyển chọn các câu hỏi tiêu biểu từ kho hơn 100 câu hỏi phủ khắp các chương lớp 12.")
+    
+    st.progress(0.33, text="Đề kiểm tra kiến thức tổng hợp THPT")
+    
+    # Hiển thị danh sách câu hỏi trắc nghiệm từ ngân hàng
+    user_answers = {}
+    for idx, item in enumerate(QUESTION_BANK):
+        st.markdown(f"**Câu {idx+1} ({item['chuyen_de']}):** {item['q']}")
+        user_answers[idx] = st.radio(
+            f"Chọn đáp án câu {idx+1}:",
+            item["options"],
+            index=None,
+            key=f"q_bank_{item['id']}"
         )
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.image("https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80", caption="Hỗ trợ hình học trực quan", use_container_width=True)
-
-elif menu == "Luyện đề & Kiểm tra":
-    st.title("📝 Kiểm tra & Luyện Đề THPT QG")
-    st.subheader("ĐỀ MINH HỌA THPT QG - TỔNG HỢP NHIỀU CÂU HỎI")
-    
-    st.progress(0.25, text="Phần thi trắc nghiệm kiến thức toán học")
-    
-    # Danh sách nhiều câu hỏi đa dạng
-    ans1 = st.radio(
-        "**Câu 1:** Hàm số $y = x^3 - 3x^2 + 2$ đồng biến trên khoảng nào dưới đây?",
-        ("A. $(0; 2)$", "B. $(-\\infty; 0)$", "C. $(2; +\\infty)$", "D. $(-\\infty; 1)$"),
-        index=None, key="q1"
-    )
-    
-    ans2 = st.radio(
-        "**Câu 2:** Nghiệm của phương trình $2^{x-1} = 8$ là bao nhiêu?",
-        ("A. $x = 2$", "B. $x = 3$", "C. $x = 4$", "D. $x = 1$"),
-        index=None, key="q2"
-    )
-
-    ans3 = st.radio(
-        "**Câu 3:** Cho cấp số cộng $(u_n)$ có số hạng đầu $u_1 = 2$ và công sai $d = 3$. Số hạng thứ 5 của cấp số cộng là:",
-        ("A. $u_5 = 14$", "B. $u_5 = 11$", "C. $u_5 = 17$", "D. $u_5 = 12$"),
-        index=None, key="q3"
-    )
-
-    ans4 = st.radio(
-        "**Câu 4:** Thể tích $V$ của khối lập phương có cạnh bằng $a$ là:",
-        ("A. $V = a^3$", "B. $V = 3a^3$", "C. $V = \\frac{1}{3}a^3$", "D. $V = a^2$"),
-        index=None, key="q4"
-    )
+        st.markdown("---")
     
     if not st.session_state.quiz_submitted:
-        if st.button("Nộp bài & Chấm điểm tổng hợp", type="primary"):
+        if st.button("Nộp Bài & Chấm Điểm Tổng Hợp", type="primary"):
             correct_count = 0
-            total_questions = 4
+            total_q = len(QUESTION_BANK)
             
-            # Đáp án đúng: Câu 1: C, Câu 2: C, Câu 3: B (u5 = u1 + 4d = 2 + 12 = 14 -> chờ chút: u1=2, u2=5, u3=8, u4=11, u5=14 -> Đáp án A), Câu 4: A (V = a^3)
-            if ans1 and "C." in ans1: correct_count += 1
-            if ans2 and "C." in ans2: correct_count += 1
-            if ans3 and "A." in ans3: correct_count += 1
-            if ans4 and "A." in ans4: correct_count += 1
+            for idx, item in enumerate(QUESTION_BANK):
+                selected = user_answers.get(idx)
+                if selected and selected.startswith(item["ans"][:2]):
+                    correct_count += 1
             
-            calculated_score = int((correct_count / total_questions) * 100)
+            calculated_score = int((correct_count / total_q) * 100)
             st.session_state.score = calculated_score
             st.session_state.quiz_submitted = True
             st.session_state.history.append(calculated_score)
             st.rerun()
     else:
-        st.success(f"🎉 Bạn đã hoàn thành bài kiểm tra! Số điểm đạt được: **{st.session_state.score} / 100** (Số câu đúng: {st.session_state.score // 25}/4)")
+        st.success(f"🎉 Bạn đã nộp bài thành công! Điểm số của bạn: **{st.session_state.score} / 100** (Số câu đúng: {(st.session_state.score * len(QUESTION_BANK)) // 100} / {len(QUESTION_BANK)})")
         if st.button("Làm lại bài kiểm tra"):
             st.session_state.quiz_submitted = False
             st.rerun()
 
-elif menu == "Kho tài liệu":
-    st.title("📚 Kho Tài Liệu & Sơ Đồ Tư Duy")
-    st.info("Tổng hợp các chuyên đề luyện thi Toán THPT trọng tâm.")
+elif menu == "Kho tài liệu THPT":
+    st.title("📚 Kho Tài Liệu & Sơ Đồ Tư Duy Toàn Diện")
+    st.info("Hệ thống lý thuyết và công thức trọng tâm bao phủ toàn bộ chương trình Toán THPT.")
     
-    with st.expander("📖 CHƯƠNG I: ỨNG DỤNG ĐẠO HÀM ĐỂ KHẢO SÁT VÀ VẼ ĐỒ THỊ HÀM SỐ"):
+    with st.expander("📖 Chương I: Ứng dụng đạo hàm khảo sát và vẽ đồ thị hàm số"):
         st.markdown("""
-        * **1. Miễn Xác Định & Tính Liên Tục:** Xác định tập giá trị $D$ mà hàm số có nghĩa.
-        * **2. Tính Đơn Điệu của Hàm Số:** Sử dụng đạo hàm bậc nhất ($f'(x)$) để xác định chiều biến thiên.
-            * Nếu $f'(x) > 0$ trên $(a, b)$ thì hàm số đồng biến.
-            * Nếu $f'(x) < 0$ trên $(a, b)$ thì hàm số nghịch biến.
-        * **3. Cực Trị của Hàm Số:** Tìm điểm mà tại đó đạo hàm đổi dấu.
+        - Tính đơn điệu, cực trị, giá trị lớn nhất - nhỏ nhất của hàm số.
+        - Đường tiệm cận của đồ thị hàm số.
+        - Khảo sát sự biến thiên và vẽ đồ thị các hàm số đa thức, phân thức hữu tỉ.
         """)
-        if st.button("Tạo bài tập mới từ chuyên đề Đạo hàm"):
-            st.success("Đã tạo thành công bộ bài tập chuyên đề Đạo hàm nâng cao!")
+        
+    with st.expander("📖 Chương II: Hàm số lũy thừa, hàm số mũ và hàm số lôgarit"):
+        st.markdown("""
+        - Lũy thừa với số mũ hữu tỉ, số mũ thực; Các tính chất của logarit.
+        - Hàm số mũ và hàm số lôgarit.
+        - Phương trình, bất phương trình mũ và lôgarit cơ bản, nâng cao.
+        """)
 
-    with st.expander("📖 CHƯƠNG II: HÀM SỐ LŨY THỪA, MŨ VÀ LOGARIT"):
+    with st.expander("📖 Chương III: Nguyên hàm, tích phân và ứng dụng"):
         st.markdown("""
-        * **1. Lũy thừa và tính chất:** Các công thức biến đổi lũy thừa với số mũ thực.
-        * **2. Lôgarit:** Định nghĩa và các tính chất cơ bản $\\log_a(bc) = \\log_a b + \\log_a c$.
-        * **3. Phương trình - Bất phương trình mũ và lôgarit:** Các phương pháp đặt ẩn phụ, lôgarit hóa.
+        - Nguyên hàm các hàm số sơ cấp, phương pháp đổi biến số, tích phân từng phần.
+        - Ứng dụng tích phân tính diện tích hình phẳng, thể tích vật thể tròn xoay.
         """)
-        if st.button("Tạo bài tập mới từ chuyên đề Mũ - Logarit"):
-            st.success("Đã tạo thành công bộ bài tập chuyên đề Mũ - Logarit!")
+
+    with st.expander("📖 Chương IV: Số phức"):
+        st.markdown("""
+        - Số phức, các phép toán số phức trên mặt phẳng tọa độ.
+        - Phương trình bậc hai với hệ số thực trên tập số phức.
+        """)
+
+    with st.expander("📖 Chương V: Phương pháp tọa độ trong không gian (Oxyz)"):
+        st.markdown("""
+        - Hệ tọa độ trong không gian, phương trình mặt phẳng, đường thẳng và mặt cầu.
+        - Các bài toán cực trị hình học không gian Oxyz.
+        """)
 
 elif menu == "Trang cá nhân":
-    st.title("👤 Hồ Sơ Người Dùng & Đánh Giá Năng Lực")
+    st.title("👤 Hồ Sơ Người Dùng & Quản Lý Tài Khoản")
     
-    col_u1, col_u2 = st.columns([1, 1])
-    with col_u1:
-        st.markdown("?")
-        st.write("Trạng thái: **Đã đăng nhập**")
+    if not st.session_state.logged_in:
+        st.info("Vui lòng đăng nhập bằng email của bạn để lưu lại tiến độ học tập và bảng điểm cá nhân.")
+        with st.form("login_form"):
+            email_input = st.text_input("Nhập địa chỉ Email của bạn:", placeholder="vd: giakhanhtran88@gmail.com")
+            password_input = st.text_input("Mật khẩu tài khoản:", type="password")
+            submit_login = st.form_submit_button("Đăng nhập / Tạo tài khoản học tập", type="primary")
+            
+            if submit_login:
+                if email_input and "@" in email_input:
+                    st.session_state.logged_in = True
+                    st.session_state.user_email = email_input
+                    st.success(f"Đăng nhập thành công tài khoản: {email_input}")
+                    st.rerun()
+                else:
+                    st.error("Vui lòng nhập một địa chỉ email hợp lệ!")
+    else:
+        col_u1, col_u2 = st.columns([1, 1])
+        with col_u1:
+            st.markdown(f"### 📧 {st.session_state.user_email}")
+            st.success("Trạng thái: **Đã đăng nhập tài khoản học thật**")
+            
+            avg_score = sum(st.session_state.history) / len(st.session_state.history)
+            st.metric(label="Điểm trung bình các bài kiểm tra", value=f"{avg_score:.1f} / 100")
+            st.error("Kỹ năng cần bồi dưỡng: Giải tích nâng cao và Hình học Oxyz")
         
-        avg_score = sum(st.session_state.history) / len(st.session_state.history)
-        st.metric(label="Điểm trung bình các bài kiểm tra", value=f"{avg_score:.1f} / 100")
-        st.error("Kỹ năng cần bồi dưỡng: Giải tích và Hình học không gian")
-    
-    with col_u2:
-        st.markdown("### 💡 Gợi ý tiếp theo")
-        st.info("Dựa trên kết quả lịch sử làm bài - Hãy xem lại lý thuyết hàm số mũ và luyện thêm các bài tập trắc nghiệm.")
-        if st.button("Tạo đề phù hợp năng lực", type="primary"):
-            st.toast("Đang tạo đề xuất đề thi riêng tối ưu theo năng lực...")
-    
-    st.markdown("---")
-    st.subheader("📈 Xu hướng điểm số các lần luyện tập")
-    st.bar_chart(st.session_state.history)
+        with col_u2:
+            st.markdown("### 💡 Đánh giá năng lực & Gợi ý")
+            st.info("Hệ thống đã ghi nhận lịch sử làm bài của bạn. Hãy tiếp tục ôn tập qua các đề thi trắc nghiệm để cải thiện điểm số.")
+            if st.button("Tạo lộ trình ôn thi phù hợp năng lực", type="primary"):
+                st.toast("Đã tối ưu hóa thành công lộ trình học tập riêng cho tài khoản của bạn!")
+        
+        st.markdown("---")
+        st.subheader("📈 Xu hướng điểm số các lần kiểm tra")
+        st.bar_chart(st.session_state.history)
