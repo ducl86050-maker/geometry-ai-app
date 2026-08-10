@@ -5,7 +5,7 @@ from google import genai
 from google.genai import types
 
 # Cấu hình trang
-st.set_page_config(page_title="MathMentor - Hệ Thống Luyện Đề 1000+ Câu", layout="wide")
+st.set_page_config(page_title="MathMentor - Phòng Luyện Đề THPT", layout="wide")
 
 # --- QUẢN LÝ TÀI KHOẢN & DỮ LIỆU TRONG SESSION ---
 if "logged_in" not in st.session_state:
@@ -13,7 +13,7 @@ if "logged_in" not in st.session_state:
 if "user_email" not in st.session_state:
     st.session_state.user_email = ""
 if "history" not in st.session_state:
-    st.session_state.history = [45, 70, 82, 90]
+    st.session_state.history = [50, 75, 85, 92]
 if "exam_submitted" not in st.session_state:
     st.session_state.exam_submitted = False
 if "exam_score" not in st.session_state:
@@ -24,10 +24,9 @@ if "shuffled_questions" not in st.session_state:
 # Lấy API key bảo mật từ cấu hình Secrets trên Streamlit Cloud
 api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets else os.environ.get("GEMINI_API_KEY")
 
-# --- HỆ THỐNG SINH HƠN 1000 CÂU HỎI TRỰC TUYẾN (ĐÃ TRỘN LẪN VÀ LOẠI BỎ SỐ PHỨC) ---
+# --- HỆ THỐNG NGÂN HÀNG HƠN 1000 CÂU HỎI TỰ ĐỘNG (ĐÃ LOẠI BỎ SỐ PHỨC) ---
 @st.cache_data
-def generate_massive_question_bank():
-    """Hàm tự động tạo kho dữ liệu lớn hơn 1000 câu hỏi phân bổ đều các chương THPT"""
+def get_optimized_question_bank():
     topics = [
         "Ứng dụng đạo hàm", 
         "Hàm số mũ và Lôgarit", 
@@ -38,43 +37,42 @@ def generate_massive_question_bank():
     bank = []
     q_id = 1
     
-    # Tạo sẵn các mẫu câu hỏi cốt lõi cực chuẩn
-    templates = {
+    base_data = {
         "Ứng dụng đạo hàm": [
-            {"q": "Hàm số y = x^3 - 3x^2 + {k} đồng biến trên khoảng nào?", "options": ["A. (0; 2)", "B. (-∞; 0)", "C. (2; +∞)", "D. (-∞; 1)"], "ans": "C. (2; +∞)", "sol": "Tính đạo hàm y' = 3x^2 - 6x, cho y' > 0 ta tìm được khoảng đồng biến là (2; +∞)."},
-            {"q": "Giá trị cực đại của hàm số y = -x^3 + 3x + {k} là:", "options": ["A. y = 2 + {k}", "B. y = {k}", "C. y = 4 + {k}", "D. y = -1 + {k}"], "ans": "A. y = 2 + {k}", "sol": "Giải phương trình y' = 0 tìm được điểm cực đại x = 1, thay vào hàm số ta được giá trị cực đại."}
+            ("Hàm số y = x^3 - 3x^2 + {k} đồng biến trên khoảng nào?", ["A. (0; 2)", "B. (-∞; 0)", "C. (2; +∞)", "D. (-∞; 1)"], "C. (2; +∞)", "Tính đạo hàm y' = 3x^2 - 6x, cho y' > 0 suy ra khoảng đồng biến là (2; +∞)."),
+            ("Giá trị cực đại của hàm số y = -x^3 + 3x + {k} là:", [f"A. y = 2 + {{k}}", f"B. y = {{k}}", f"C. y = 4 + {{k}}", f"D. y = -1 + {{k}}"], f"A. y = 2 + {{k}}", "Đạo hàm y' = -3x^2 + 3 = 0 => x = 1. Giá trị cực đại y(1) = 2 + k.")
         ],
         "Hàm số mũ và Lôgarit": [
-            {"q": "Nghiệm của phương trình 2^(x-{k}) = 8 là:", "options": [f"A. x = {3+int(k)}", f"B. x = {1+int(k)}", f"C. x = {2+int(k)}", f"D. x = {4+int(k)}"], "ans": f"A. x = {3+int(k)}", "sol": "Biến đổi vế phải thành lũy thừa cơ số 2: 8 = 2^3, từ đó suy ra x - k = 3."},
-            {"q": "Tập nghiệm của bất phương trình log_2(x - {k}) < 3 với x > {k} là:", "options": [f"A. ({k}; {8+int(k)})", f"B. ({k}; {7+int(k)})", f"C. (-∞; {8+int(k)})", f"D. ({8+int(k)}; +∞)"], "ans": f"A. ({k}; {8+int(k)})", "sol": "Giải bất phương trình log cơ bản ta suy ra x - k < 8 <=> x < 8 + k kết hợp điều kiện."}
+            ("Nghiệm của phương trình 2^(x-{k}) = 8 là:", [f"A. x = {3}", f"B. x = {1}", f"C. x = {2}", f"D. x = {4}"], f"A. x = {3}", "Biến đổi 8 = 2^3, đồng nhất số mũ suy ra kết quả."),
+            ("Tập nghiệm của bất phương trình log_2(x - {k}) < 3 là:", [f"A. ({k}; {8})", f"B. ({k}; {7})", f"C. (-∞; {8})", f"D. ({8}; +∞)"], f"A. ({k}; {8})", "Giải điều kiện và bất phương trình logarit cơ bản.")
         ],
         "Nguyên hàm và Tích phân": [
-            {"q": "Nguyên hàm của hàm số f(x) = cos(x) + {k}x là:", "options": [f"A. sin(x) + {k}*x^2/2 + C", f"B. -sin(x) + {k}*x^2 + C", f"C. cos(x) + {k}x + C", f"D. sin(x) + {k}x + C"], "ans": f"A. sin(x) + {k}*x^2/2 + C", "sol": "Áp dụng công thức nguyên hàm cơ bản cho từng số hạng ta được kết quả chính xác."},
-            {"q": "Tích phân từ 0 đến 1 của (2x + {k}) dx bằng:", "options": [f"A. {1 + int(k)}", f"B. {2 + int(k)}", f"C. {3 + int(k)}", f"D. {int(k)}"], "ans": f"A. {1 + int(k)}", "sol": "Tính nguyên hàm F(x) = x^2 + k*x rồi thế cận từ 0 đến 1."}
+            ("Nguyên hàm của hàm số f(x) = cos(x) + {k}x là:", ["A. sin(x) + k*x^2/2 + C", "B. -sin(x) + k*x^2 + C", "C. cos(x) + kx + C", "D. sin(x) + kx + C"], "A. sin(x) + k*x^2/2 + C", "Áp dụng công thức nguyên hàm cơ bản cho từng số hạng."),
+            ("Tích phân từ 0 đến 1 của (2x + {k}) dx bằng:", ["A. 1 + k", "B. 2 + k", "C. 3 + k", "D. k"], "A. 1 + k", "Tính nguyên hàm F(x) = x^2 + k*x rồi thế cận từ 0 đến 1.")
         ],
         "Hình học Oxyz": [
-            {"q": "Trong không gian Oxyz, vectơ pháp tuyến của mặt phẳng x - 2y + {k}z - 5 = 0 là:", "options": [f"A. (1; -2; {k})", f"B. (1; 2; -{k})", f"C. (-1; 2; {k})", f"D. (2; -1; {k})"], "ans": f"A. (1; -2; {k})", "sol": "Tọa độ vectơ pháp tuyến chính là các hệ số của x, y, z trong phương trình mặt phẳng."},
-            {"q": "Thể tích khối cầu có bán kính R = {k} (với k nguyên dương) là:", "options": [f"A. {4*int(k)**3 * 3.14 / 3}π", f"B. {4*int(k)**2}π", f"C. {4*int(k)**3 / 3}π", f"D. {int(k)**3}π"], "ans": f"C. {4*int(k)**3 / 3}π", "sol": "Áp dụng công thức thể tích khối cầu V = 4/3 * π * R^3."}
+            ("Trong không gian Oxyz, vectơ pháp tuyến của mặt phẳng x - 2y + {k}z - 5 = 0 là:", ["A. (1; -2; k)", "B. (1; 2; -k)", "C. (-1; 2; k)", "D. (2; -1; k)"], "A. (1; -2; k)", "Tọa độ vectơ pháp tuyến là hệ số của x, y, z trong phương trình mặt phẳng."),
+            ("Thể tích khối cầu có bán kính R = {k} là:", ["A. (4/3)*k^3 * π", "B. 4*k^2 * π", "C. (4/3)*k^2 * π", "D. k^3 * π"], "A. (4/3)*k^3 * π", "Áp dụng công thức thể tích khối cầu V = (4/3)πR^3.")
         ]
     }
 
-    # Nhân bản thông minh để đạt quy mô hơn 1000 câu hỏi trải đều
-    for i in range(150): # 150 vòng lặp * 8 câu mẫu * biến hóa tham số = hơn 1000 câu
-        k_val = str((i % 5) + 1)
+    # Sinh quy mô lớn hơn 1000 câu bằng biến hóa tham số k
+    for i in range(125):
+        k_val = str((i % 4) + 1)
         for topic in topics:
-            for item in templates[topic]:
+            for q_str, opts, ans, sol in base_data[topic]:
                 bank.append({
                     "id": q_id,
                     "chuyen_de": topic,
-                    "q": item["q"].replace("{k}", k_val),
-                    "options": [opt.replace("{k}", k_val) for opt in item["options"]],
-                    "ans": item["ans"].replace("{k}", k_val),
-                    "sol": item["sol"].replace("{k}", k_val)
+                    "q": q_str.replace("{k}", k_val),
+                    "options": [o.replace("k", k_val) for o in opts],
+                    "ans": ans.replace("k", k_val),
+                    "sol": sol.replace("k", k_val)
                 })
                 q_id += 1
     return bank
 
-MASTER_QUESTION_BANK = generate_massive_question_bank()
+MASTER_QUESTION_BANK = get_optimized_question_bank()
 
 # --- THANH MENU BÊN TRÁI (SIDEBAR) ---
 st.sidebar.markdown("## 📐 MathMentor Pro")
@@ -176,7 +174,7 @@ elif menu == "Phòng Luyện Đề (1000+ Câu)":
             f"Lựa chọn đáp án câu {idx+1}:",
             q_item["options"],
             index=None,
-            key=f"massive_q_{q_item['id']}_{idx}"
+            key=f"safe_q_{q_item['id']}_{idx}"
         )
         st.markdown("---")
 
