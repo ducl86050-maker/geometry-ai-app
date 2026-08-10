@@ -24,7 +24,7 @@ if "shuffled_questions" not in st.session_state:
 # Lấy API key bảo mật từ cấu hình Secrets trên Streamlit Cloud
 api_key = st.secrets.get("GEMINI_API_KEY") if "GEMINI_API_KEY" in st.secrets else os.environ.get("GEMINI_API_KEY")
 
-# --- HỆ THỐNG NGÂN HÀNG HƠN 1000 CÂU HỎI TỰ ĐỘNG (ĐÃ LOẠI BỎ SỐ PHỨC) ---
+# --- HỆ THỐNG NGÂN HÀNG HƠN 1000 CÂU HỎI TỰ ĐỘNG (ĐÃ SỬA LỖI CÚ PHÁP) ---
 @st.cache_data
 def get_optimized_question_bank():
     topics = [
@@ -40,11 +40,11 @@ def get_optimized_question_bank():
     base_data = {
         "Ứng dụng đạo hàm": [
             ("Hàm số y = x^3 - 3x^2 + {k} đồng biến trên khoảng nào?", ["A. (0; 2)", "B. (-∞; 0)", "C. (2; +∞)", "D. (-∞; 1)"], "C. (2; +∞)", "Tính đạo hàm y' = 3x^2 - 6x, cho y' > 0 suy ra khoảng đồng biến là (2; +∞)."),
-            ("Giá trị cực đại của hàm số y = -x^3 + 3x + {k} là:", [f"A. y = 2 + {{k}}", f"B. y = {{k}}", f"C. y = 4 + {{k}}", f"D. y = -1 + {{k}}"], f"A. y = 2 + {{k}}", "Đạo hàm y' = -3x^2 + 3 = 0 => x = 1. Giá trị cực đại y(1) = 2 + k.")
+            ("Giá trị cực đại của hàm số y = -x^3 + 3x + {k} là:", ["A. y = 2 + {k}", "B. y = {k}", "C. y = 4 + {k}", "D. y = -1 + {k}"], "A. y = 2 + {k}", "Đạo hàm y' = -3x^2 + 3 = 0 => x = 1. Giá trị cực đại y(1) = 2 + k.")
         ],
         "Hàm số mũ và Lôgarit": [
-            ("Nghiệm của phương trình 2^(x-{k}) = 8 là:", [f"A. x = {3}", f"B. x = {1}", f"C. x = {2}", f"D. x = {4}"], f"A. x = {3}", "Biến đổi 8 = 2^3, đồng nhất số mũ suy ra kết quả."),
-            ("Tập nghiệm của bất phương trình log_2(x - {k}) < 3 là:", [f"A. ({k}; {8})", f"B. ({k}; {7})", f"C. (-∞; {8})", f"D. ({8}; +∞)"], f"A. ({k}; {8})", "Giải điều kiện và bất phương trình logarit cơ bản.")
+            ("Nghiệm của phương trình 2^(x-{k}) = 8 là:", ["A. x = 3", "B. x = 1", "C. x = 2", "D. x = 4"], "A. x = 3", "Biến đổi 8 = 2^3, đồng nhất số mũ suy ra kết quả."),
+            ("Tập nghiệm của bất phương trình log_2(x - {k}) < 3 là:", ["A. ({k}; 8)", "B. ({k}; 7)", "C. (-∞; 8)", "D. (8; +∞)"], "A. ({k}; 8)", "Giải điều kiện và bất phương trình logarit cơ bản.")
         ],
         "Nguyên hàm và Tích phân": [
             ("Nguyên hàm của hàm số f(x) = cos(x) + {k}x là:", ["A. sin(x) + k*x^2/2 + C", "B. -sin(x) + k*x^2 + C", "C. cos(x) + kx + C", "D. sin(x) + kx + C"], "A. sin(x) + k*x^2/2 + C", "Áp dụng công thức nguyên hàm cơ bản cho từng số hạng."),
@@ -65,9 +65,9 @@ def get_optimized_question_bank():
                     "id": q_id,
                     "chuyen_de": topic,
                     "q": q_str.replace("{k}", k_val),
-                    "options": [o.replace("k", k_val) for o in opts],
-                    "ans": ans.replace("k", k_val),
-                    "sol": sol.replace("k", k_val)
+                    "options": [o.replace("{k}", k_val) for o in opts],
+                    "ans": ans.replace("{k}", k_val),
+                    "sol": sol.replace("{k}", k_val)
                 })
                 q_id += 1
     return bank
@@ -174,7 +174,7 @@ elif menu == "Phòng Luyện Đề (1000+ Câu)":
             f"Lựa chọn đáp án câu {idx+1}:",
             q_item["options"],
             index=None,
-            key=f"safe_q_{q_item['id']}_{idx}"
+            key=f"fixed_q_{q_item['id']}_{idx}"
         )
         st.markdown("---")
 
